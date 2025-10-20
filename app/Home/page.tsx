@@ -12,6 +12,7 @@ import { TypographyP } from "../components/Typography/TypographyP";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 const formSchema = z.object({
   department: z.string().nonempty(),
   projectName: z.string().min(2),
