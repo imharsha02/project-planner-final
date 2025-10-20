@@ -26,10 +26,10 @@ const HomePage = () => {
         className=" border-none text-center tracking-wide
 "
       >
-        Start by choosing your project
+        Step 1 Choose your project
       </TypographyH2>
 
-      <Card className="flex items-center space-x-2 w-max mx-auto p-2">
+      <Card className="flex items-center space-x-2 my-2 w-max mx-auto p-2">
         <CardContent className="space-y-3">
           <div className="flex items-center space-x-1">
             <TypographyP>Department: </TypographyP>

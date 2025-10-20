@@ -55,13 +55,18 @@ const Header = () => {
               </Button>
             </div>
           ) : (
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="cursor-pointer"
-            >
-              Sign out
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" className="cursor-pointer">
+                My Projects
+              </Button>
+              <Button
+                onClick={logout}
+                variant="outline"
+                className="cursor-pointer"
+              >
+                Sign out
+              </Button>
+            </div>
           )}
         </div>
       </div>
