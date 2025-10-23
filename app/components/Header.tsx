@@ -6,6 +6,7 @@ import { signInWithGoogle } from "../lib/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -21,8 +22,14 @@ const Header = () => {
         <div className="flex items-center space-x-2 w-[260px] md:w-[320px] lg:w-[380px] justify-end">
           {isAuthenticated ? (
             <div className="flex items-center space-x-2">
-              <Button variant="outline" className="cursor-pointer">
-                My Projects
+              <Button
+                variant="outline"
+                className="cursor-pointer"
+                asChild={true}
+              >
+                <Link href={`/${session?.user?.id}/my_projects`}>
+                  My Projects
+                </Link>
               </Button>
               <div className="relative">
                 <Avatar className="h-10 w-10 cursor-pointer" onClick={logout}>
