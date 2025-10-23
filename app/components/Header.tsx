@@ -3,20 +3,37 @@ import { TypographyH1 } from "./Typography/TypographyH1";
 import { Button } from "@/components/ui/button";
 import { login, logout } from "../lib/actions/auth";
 import { signInWithGoogle } from "../lib/actions/auth";
-import { usePathname } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 const Header = () => {
-  const pathName = usePathname();
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated";
+  const userImage = session?.user?.image;
+  const userName = session?.user?.name;
   return (
     <>
       <div className="flex items-center justify-between w-full mx-auto px-6 py-4">
-        <div className="invisible w-[260px] md:w-[320px] lg:w-[380px]"></div>
         <TypographyH1 className="py-3 tracking-wide flex-grow text-center">
           Project planner
         </TypographyH1>
         <div className="flex items-center space-x-2 w-[260px] md:w-[320px] lg:w-[380px] justify-end">
-          {pathName === "/" ? (
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" className="cursor-pointer">
+                My Projects
+              </Button>
+              <div className="relative">
+                <Avatar className="h-10 w-10 cursor-pointer" onClick={logout}>
+                  {userImage && (
+                    <AvatarImage src={userImage} alt={userName || "User"} />
+                  )}
+                  <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
+          ) : (
             <div className="flex items-center space-x-2">
               <Button
                 onClick={login}
@@ -43,19 +60,6 @@ const Header = () => {
                   width={16}
                   height={16}
                 />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" className="cursor-pointer">
-                My Projects
-              </Button>
-              <Button
-                onClick={logout}
-                variant="outline"
-                className="cursor-pointer"
-              >
-                Sign out
               </Button>
             </div>
           )}
