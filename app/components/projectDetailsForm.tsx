@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
 import {
   Select,
   SelectContent,
@@ -135,7 +136,7 @@ const ProjectDetailsForm = () => {
               )}
             />
             <Button type="submit" className="w-full cursor-pointer">
-              Start Tracking
+              Add Project
             </Button>
           </form>
         </Form>

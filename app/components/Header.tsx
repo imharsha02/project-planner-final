@@ -1,7 +1,8 @@
 "use client";
 import { TypographyH1 } from "./Typography/TypographyH1";
 import { Button } from "@/components/ui/button";
-import { login, logout } from "../lib/actions/auth";
+import { login } from "../lib/actions/auth";
+import { usePathname } from "next/navigation";
 import { signInWithGoogle } from "../lib/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
+  const pathName = usePathname();
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated";
   const userImage = session?.user?.image;
@@ -56,7 +58,17 @@ const Header = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <div className="relative"></div>
+              {pathName != "/add-a-project" ? (
+                <Button
+                  variant="outline"
+                  className="coursor-pointer"
+                  asChild={true}
+                >
+                  <Link href="/add-a-project">Add a Project</Link>
+                </Button>
+              ) : (
+                <></>
+              )}
             </div>
           ) : (
             <div className="flex items-center space-x-2">

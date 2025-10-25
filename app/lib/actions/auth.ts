@@ -2,7 +2,7 @@
 import { signIn, signOut } from "../../auth";
 
 export const login = async () => {
-  await signIn("github", { redirectTo: "/Home" });
+  await signIn("github", { redirectTo: "/Dashboard" });
 };
 
 export const logout = async () => {
@@ -10,5 +10,5 @@ export const logout = async () => {
 };
 
 export const signInWithGoogle = async () => {
-  await signIn("google", { redirectTo: "/Home" });
+  await signIn("google", { redirectTo: "/Dashboard" });
 };
