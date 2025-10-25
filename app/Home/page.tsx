@@ -1,62 +1,131 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TypographyH2 } from "../components/Typography/TypographyH2";
-import { TypographyP } from "../components/Typography/TypographyP";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { TypographyH2 } from "../components/Typography/TypographyH2";
+
 const formSchema = z.object({
   department: z.string().nonempty(),
   projectName: z.string().min(2),
   projectType: z.string(),
-  Steps: z.string(),
+  steps: z.string(),
 });
-const HomePage = () => {
+
+const ProjectDetailsForm = () => {
+  // 1. Define your form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      department: "",
+      projectName: "",
+      projectType: "",
+      steps: "",
+    },
+  });
+
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    console.log(values);
+  }
+
   return (
     <div>
-      <TypographyH2
-        className=" border-none text-center tracking-wide
-"
-      >
-        Step 1 Choose your project
+      <TypographyH2 className="text-center py-3 border-none tracking-wide">
+        Add Project
       </TypographyH2>
+      <Card className="w-max mx-auto">
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="projectName"
+                render={({ field }) => (
+                  <FormItem className="flex items-center">
+                    <FormLabel>Project Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Name your poject" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-      <Card className="flex items-center space-x-2 my-2 w-max mx-auto p-2">
-        <CardContent className="space-y-3">
-          <div className="flex items-center space-x-1">
-            <TypographyP>Department: </TypographyP>
-            <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Project department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Architecture</SelectItem>
-                <SelectItem value="dark">Computer Science</SelectItem>
-                <SelectItem value="system">Electrical</SelectItem>
-                <SelectItem value="system">Artificial Intaligence</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem className="flex items-center">
+                    <FormLabel>Department</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Slect a department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Department</SelectLabel>
+                            {/* Use .map and render each department from an array */}
+                            <SelectItem value="apple">Apple</SelectItem>
+                            <SelectItem value="banana">Banana</SelectItem>
+                            <SelectItem value="blueberry">Blueberry</SelectItem>
+                            <SelectItem value="grapes">Grapes</SelectItem>
+                            <SelectItem value="pineapple">Pineapple</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-          <div className="flex items-center space-x-1">
-            <TypographyP>Project Name: </TypographyP>
-            <Input type="text" placeholder="Project name" />
-          </div>
+              {/* <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="shadcn" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This is your public display name.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+              <Button type="submit" className="w-full">
+                Start Tracking
+              </Button>
+            </form>
+          </Form>
         </CardContent>
-        <CardFooter>
-          <Button>Start Tracking</Button>
-        </CardFooter>
       </Card>
     </div>
   );
 };
-
-export default HomePage;
+export default ProjectDetailsForm;
