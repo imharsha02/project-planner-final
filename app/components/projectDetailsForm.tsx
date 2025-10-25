@@ -28,6 +28,7 @@ const formSchema = z.object({
   projectName: z.string().nonempty(),
   startDate: z.string(),
   endDate: z.string(),
+  thumbnail: z.file(),
 });
 
 const ProjectDetailsForm = () => {
@@ -39,6 +40,7 @@ const ProjectDetailsForm = () => {
       projectName: "",
       startDate: "",
       endDate: "",
+      thumbnail: undefined,
     },
   });
 
@@ -113,6 +115,23 @@ const ProjectDetailsForm = () => {
                   <FormLabel>End Date</FormLabel>
                   <FormControl>
                     <DatePicker value={field.value} onChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="thumbnail"
+              render={({ field: { value, onChange, ...field } }) => (
+                <FormItem className="flex items-center">
+                  <FormLabel>Thumbnail</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      onChange={(e) => onChange(e.target.files?.[0])}
+                      {...field}
+                    />
                   </FormControl>
                 </FormItem>
               )}
