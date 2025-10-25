@@ -9,7 +9,6 @@ const ProjectDetailsFormPage = () => {
       <TypographyH2 className="text-center py-3 border-none tracking-wide w-full">
         Add a project
       </TypographyH2>
-
       <ProjectDetailsForm />
     </div>
   );

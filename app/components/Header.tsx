@@ -5,7 +5,7 @@ import { login, logout } from "../lib/actions/auth";
 import { signInWithGoogle } from "../lib/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -44,7 +44,11 @@ const Header = () => {
                 <DropdownMenuContent>
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                  >
+                    Sign out
+                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link href={`/${session?.user?.id}/my_projects`}>
                       My Projects
