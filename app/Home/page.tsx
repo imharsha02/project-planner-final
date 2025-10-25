@@ -7,10 +7,13 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/datePicker";
+import { useState } from "react";
+import { departments } from "@/lib/utils";
+
 import {
   Form,
   FormControl,
@@ -25,20 +28,21 @@ import { TypographyH2 } from "../components/Typography/TypographyH2";
 
 const formSchema = z.object({
   department: z.string().nonempty(),
-  projectName: z.string().min(2),
-  projectType: z.string(),
-  steps: z.string(),
+  projectName: z.string().nonempty(),
+  startDate: z.string(),
+  endDate: z.string(),
 });
 
 const ProjectDetailsForm = () => {
+  const [date, setDate] = useState("");
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       department: "",
       projectName: "",
-      projectType: "",
-      steps: "",
+      startDate: "",
+      endDate: "",
     },
   });
 
@@ -86,15 +90,13 @@ const ProjectDetailsForm = () => {
                           <SelectValue placeholder="Slect a department" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Department</SelectLabel>
-                            {/* Use .map and render each department from an array */}
-                            <SelectItem value="apple">Apple</SelectItem>
-                            <SelectItem value="banana">Banana</SelectItem>
-                            <SelectItem value="blueberry">Blueberry</SelectItem>
-                            <SelectItem value="grapes">Grapes</SelectItem>
-                            <SelectItem value="pineapple">Pineapple</SelectItem>
-                          </SelectGroup>
+                          {departments.map((department) => (
+                            <SelectGroup key={department}>
+                              <SelectItem value={department}>
+                                {department}
+                              </SelectItem>
+                            </SelectGroup>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -102,22 +104,37 @@ const ProjectDetailsForm = () => {
                 )}
               />
 
-              {/* <FormField
-              control={form.control}
-              name="department"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="shadcn" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem className="flex items-center">
+                    <FormLabel>Start Date</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem className="flex items-center">
+                    <FormLabel>End Date</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               <Button type="submit" className="w-full">
                 Start Tracking
               </Button>
