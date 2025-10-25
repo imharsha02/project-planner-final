@@ -7,6 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -22,23 +30,29 @@ const Header = () => {
         <div className="flex items-center space-x-2 w-[260px] md:w-[320px] lg:w-[380px] justify-end">
           {isAuthenticated ? (
             <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                asChild={true}
-              >
-                <Link href={`/${session?.user?.id}/my_projects`}>
-                  My Projects
-                </Link>
-              </Button>
-              <div className="relative">
-                <Avatar className="h-10 w-10 cursor-pointer" onClick={logout}>
-                  {userImage && (
-                    <AvatarImage src={userImage} alt={userName || "User"} />
-                  )}
-                  <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
-                </Avatar>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Avatar className="h-10 w-10 cursor-pointer">
+                    {userImage && (
+                      <AvatarImage src={userImage} alt={userName || "User"} />
+                    )}
+                    <AvatarFallback>
+                      {userName?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href={`/${session?.user?.id}/my_projects`}>
+                      My Projects
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div className="relative"></div>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
