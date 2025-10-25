@@ -23,30 +23,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async signIn({ account, profile }) {
-      if (!profile?.email) {
-        throw new Error("No profile");
-      }
-      await supabase.from("new_users").insert([
-        {
-          person_name: profile.name,
-          person_email: profile.email,
-          account_password: null,
-        },
-      ]);
-      return true;
-    },
-    async jwt({ token, user, account, profile }) {
-      if (profile?.id) {
-        token.userId = profile.id;
+    async jwt({ token, profile }) {
+      if (profile) {
+        console.log("Profile during jwt creation");
+        const googleId = profile.id || profile.sub;
+        if (googleId) {
+          token.userId = googleId;
+        }
       }
       return token;
     },
     async session({ session, token }) {
+      console.log("Token in session creation: ", token);
       if (token.userId) {
         session.user.id = String(token.userId);
       }
       return session;
+    },
+    async signIn({ account, profile }) {
+      const uniqueId = profile?.id || profile?.sub; // Use the confirmed unique ID
+
+      if (uniqueId) {
+        await supabase.from("new_users").upsert({
+          id: uniqueId,
+          person_name: profile.name,
+          person_email: profile.email,
+        });
+      }
+      return true;
     },
   },
 });
