@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { createProjectAction } from "../actions/projectaActions";
 
 const formSchema = z.object({
   department: z.string().nonempty(),
@@ -46,14 +47,11 @@ const ProjectDetailsForm = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
   return (
     <Card className="w-max mx-auto">
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form action={createProjectAction} className="space-y-8">
             <FormField
               control={form.control}
               name="projectName"
