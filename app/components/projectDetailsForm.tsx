@@ -47,11 +47,23 @@ const ProjectDetailsForm = () => {
   });
 
   // 2. Define a submit handler.
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const formData = new FormData();
+    formData.append("department", values.department);
+    formData.append("projectName", values.projectName);
+    formData.append("startDate", values.startDate || "");
+    formData.append("endDate", values.endDate || "");
+    if (values.thumbnail) {
+      formData.append("thubmnail", values.thumbnail);
+    }
+    await createProjectAction(formData);
+  }
+
   return (
     <Card className="w-max mx-auto">
       <CardContent>
         <Form {...form}>
-          <form action={createProjectAction} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
               name="projectName"
