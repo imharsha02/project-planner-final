@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/datePicker";
 import { departments } from "@/lib/utils";
 
@@ -30,7 +31,8 @@ const formSchema = z.object({
   projectName: z.string().nonempty(),
   startDate: z.string(),
   endDate: z.string(),
-  thumbnail: z.file(),
+  thumbnail: z.string().optional(),
+  projectDetails: z.string(),
 });
 
 const ProjectDetailsForm = () => {
@@ -42,21 +44,34 @@ const ProjectDetailsForm = () => {
       projectName: "",
       startDate: "",
       endDate: "",
-      thumbnail: undefined,
+      thumbnail: "",
+      projectDetails: "",
     },
   });
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const formData = new FormData();
-    formData.append("department", values.department);
-    formData.append("projectName", values.projectName);
-    formData.append("startDate", values.startDate || "");
-    formData.append("endDate", values.endDate || "");
-    if (values.thumbnail) {
-      formData.append("thubmnail", values.thumbnail);
+    try {
+      const formData = new FormData();
+      formData.append("department", values.department);
+      formData.append("projectName", values.projectName);
+      formData.append("startDate", values.startDate || "");
+      formData.append("endDate", values.endDate || "");
+      if (values.thumbnail) {
+        formData.append("thubmnail", values.thumbnail);
+      }
+      formData.append("projectDetails", values.projectDetails);
+      await createProjectAction(formData);
+    } catch (error) {
+      // Handle errors from server action
+      console.error("Error creating project:", error);
+      if (error instanceof Error) {
+        // Display error to user (you might want to use a toast or form error state instead)
+        alert(error.message);
+      } else {
+        alert("Failed to create project. Please try again.");
+      }
     }
-    await createProjectAction(formData);
   }
 
   return (
@@ -139,6 +154,22 @@ const ProjectDetailsForm = () => {
                     <Input
                       type="file"
                       onChange={(e) => onChange(e.target.files?.[0])}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="projectDetails"
+              render={({ field }) => (
+                <FormItem className="flex items-center">
+                  <FormLabel>Project Details</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Short discription of your project"
                       {...field}
                     />
                   </FormControl>

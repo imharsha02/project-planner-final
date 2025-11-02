@@ -10,7 +10,7 @@ export async function createProjectAction(formData: FormData) {
   const startDate = formData.get("startDate") as string | null;
   const endDate = formData.get("endDate") as string | null;
   const thumbnail = formData.get("thubmnail") as File | null;
-
+  const projectDetails = formData.get("projectDetails") as string | null;
   // Check if user is authenticated
   const session = await auth();
   if (!session?.user?.id) {
@@ -34,6 +34,7 @@ export async function createProjectAction(formData: FormData) {
         end_date: endDate || null,
         thumbnail_url: thumbnail ? thumbnail.name : null,
         user_id: session.user.id,
+        project_description: projectDetails || null,
       },
     ])
     .select();
