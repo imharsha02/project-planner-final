@@ -2,7 +2,7 @@ import React from "react";
 import { TypographyP } from "./components/Typography/TypographyP";
 const Page = async () => {
   return (
-    <div>
+    <div className=" max-w-7xl mx-auto">
       <div className="w-1/2 mx-auto text-center rounded border px-3">
         <TypographyP>
           Transform chaos into clarity. The project planner helps you add tasks,

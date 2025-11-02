@@ -19,22 +19,28 @@ const DashboardPage = async () => {
   }
   return (
     <>
-      <div className="flex gap-4">
-        {projects.map((project) => (
-          <div key={project.id} className="w-max mx-auto">
-            <Card className="w-max p-4">
-              <CardHeader>
-                <CardTitle>{project.project_name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                <p>{project.department}</p>
-                <p>{project.start_date}</p>
-                <p>{project.end_date}</p>
-              </CardContent>
-            </Card>
-          </div>
-        ))}
-      </div>
+      {projects.length > 0 ? (
+        <div className="flex gap-4">
+          {projects.map((project) => (
+            <div key={project.id} className="w-max mx-auto">
+              <Card className="w-max p-4">
+                <CardHeader>
+                  <CardTitle>{project.project_name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2">
+                  <p>{project.department}</p>
+                  <p>{project.start_date}</p>
+                  <p>{project.end_date}</p>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <p>No projects yet</p>
+        </div>
+      )}
     </>
   );
 };
