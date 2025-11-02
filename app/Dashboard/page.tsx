@@ -2,7 +2,7 @@ import React from "react";
 import { auth } from "../auth";
 import { redirect } from "next/navigation";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProjectCard } from "../components/ProjectCard";
 const DashboardPage = async () => {
   const session = await auth();
   if (!session?.user?.id) {
@@ -22,22 +22,18 @@ const DashboardPage = async () => {
       {projects.length > 0 ? (
         <div className="flex gap-4">
           {projects.map((project) => (
-            <div key={project.id} className="w-max mx-auto">
-              <Card className="w-max p-4">
-                <CardHeader>
-                  <CardTitle>{project.project_name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2">
-                  <p>{project.department}</p>
-                  <p>{project.start_date}</p>
-                  <p>{project.end_date}</p>
-                </CardContent>
-              </Card>
-            </div>
+            <ProjectCard
+              key={project.id}
+              id={project.id}
+              project_name={project.project_name}
+              department={project.department}
+              start_date={project.start_date}
+              end_date={project.end_date}
+            />
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div>
           <p>No projects yet</p>
         </div>
       )}
