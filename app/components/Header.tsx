@@ -79,10 +79,12 @@ const Header = () => {
           )}
         </div>
       </div>
-      <Avatar className="h-10 w-10 absolute right-10">
-        <AvatarImage src={userImage ?? undefined} alt={userName || "User"} />
-        <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
-      </Avatar>
+      {isAuthenticated && (
+        <Avatar className="h-10 w-10 absolute right-10">
+          <AvatarImage src={userImage ?? undefined} alt={userName || "User"} />
+          <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
+        </Avatar>
+      )}
     </div>
   );
 };
