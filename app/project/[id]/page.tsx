@@ -8,16 +8,12 @@ const ProjectId = async ({ params }: { params: { id: string } }) => {
   console.log(project);
   return (
     <div className="a m-10">
-      {/* TODO: Add individual project details */}
-      {project ? (
+      {project && (
         <div>
           <TypographyH2 className="tracking-wide border-none text-center">
             {project.project_name}
           </TypographyH2>
-          {project.department}
         </div>
-      ) : (
-        <></>
       )}
     </div>
   );
