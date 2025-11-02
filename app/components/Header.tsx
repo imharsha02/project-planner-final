@@ -15,7 +15,7 @@ const Header = () => {
   const userImage = session?.user?.image;
   const userName = session?.user?.name;
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center fixed top-0 w-full bg-white z-50">
       <div className="flex items-center rounded-full bg-gray-100 my-3 justify-between px-6 w-1/4 md:w-1/3 lg:w-1/2">
         <TypographyH1 className="py-3 tracking-wide">
           Project planner

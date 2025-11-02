@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <SessionProviderWrapper>
           <Header />
-          {children}
+          <div className="pt-20">{children}</div>
         </SessionProviderWrapper>
       </body>
     </html>
