@@ -6,7 +6,7 @@ const DashboardPage = async () => {
   return (
     <>
       {projects && projects.length > 0 ? (
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap py-4">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
