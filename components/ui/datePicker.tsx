@@ -45,6 +45,21 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   const [month, setMonth] = React.useState<Date | undefined>(date);
   const [inputValue, setInputValue] = React.useState(formatDate(date));
 
+  // Update internal state when value prop changes
+  React.useEffect(() => {
+    if (value) {
+      const newDate = new Date(value);
+      if (isValidDate(newDate)) {
+        setDate(newDate);
+        setMonth(newDate);
+        setInputValue(formatDate(newDate));
+      }
+    } else {
+      setDate(undefined);
+      setInputValue("");
+    }
+  }, [value]);
+
   return (
     <div className="flex flex-col gap-3">
       <div className="relative flex gap-2">

@@ -1,3 +1,4 @@
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,17 +36,27 @@ const formSchema = z.object({
   projectDetails: z.string(),
 });
 
-const ProjectDetailsForm = () => {
+interface ProjectDetailsFormProps {
+  initialData?: {
+    department?: string;
+    project_name?: string;
+    start_date?: string;
+    end_date?: string;
+    project_description?: string;
+  };
+}
+
+const ProjectDetailsForm = ({ initialData }: ProjectDetailsFormProps) => {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      department: "",
-      projectName: "",
-      startDate: "",
-      endDate: "",
+      department: initialData?.department || "",
+      projectName: initialData?.project_name || "",
+      startDate: initialData?.start_date || "",
+      endDate: initialData?.end_date || "",
       thumbnail: "",
-      projectDetails: "",
+      projectDetails: initialData?.project_description || "",
     },
   });
 
