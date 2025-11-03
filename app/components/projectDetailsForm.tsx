@@ -80,12 +80,6 @@ const ProjectDetailsForm = ({
     } catch (error) {
       // Handle errors from server action
       console.error("Error creating project:", error);
-      if (error instanceof Error) {
-        // Display error to user (you might want to use a toast or form error state instead)
-        alert(error.message);
-      } else {
-        alert("Failed to create project. Please try again.");
-      }
     }
   }
 

@@ -25,7 +25,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, profile }) {
       if (profile) {
-        console.log("Profile during jwt creation");
         const googleId = profile.id || profile.sub;
         if (googleId) {
           token.userId = googleId;
