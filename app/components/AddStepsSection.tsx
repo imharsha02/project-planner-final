@@ -16,10 +16,12 @@ export default function AddStepsSection() {
 
   const addStep = () => {
     setIsEnabled(!isEnabled);
-    const stepsArray = [...steps, stepName];
-    setSteps(stepsArray);
-    setStepName("");
-    console.log(steps);
+    if (stepName) {
+      const stepsArray = [...steps, stepName];
+      setSteps(stepsArray);
+      setStepName("");
+      console.log(steps);
+    }
   };
   return (
     <>
