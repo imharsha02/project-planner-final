@@ -28,6 +28,7 @@ const ProjectId = async ({ params }: { params: { id: string } }) => {
                 end_date: project.end_date,
                 project_description: project.project_description,
               }}
+              buttonText="Update Project"
             />
           </div>
         </div>

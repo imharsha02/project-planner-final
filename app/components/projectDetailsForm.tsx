@@ -44,9 +44,13 @@ interface ProjectDetailsFormProps {
     end_date?: string;
     project_description?: string;
   };
+  buttonText?: string;
 }
 
-const ProjectDetailsForm = ({ initialData }: ProjectDetailsFormProps) => {
+const ProjectDetailsForm = ({
+  initialData,
+  buttonText,
+}: ProjectDetailsFormProps) => {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -188,7 +192,7 @@ const ProjectDetailsForm = ({ initialData }: ProjectDetailsFormProps) => {
               )}
             />
             <Button type="submit" className="w-full cursor-pointer">
-              Add Project
+              {buttonText || "Add Project"}
             </Button>
           </form>
         </Form>
