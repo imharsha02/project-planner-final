@@ -8,21 +8,12 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { TypographyH2 } from "@/app/components/Typography/TypographyH2";
 import { PlusIcon } from "lucide-react";
 import { TypographyP } from "./Typography/TypographyP";
+import { createStepAction } from "@/app/actions/projectaActions";
 
-export default function AddStepsSection() {
+export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [stepName, setStepName] = useState("");
   const [steps, setSteps] = useState<string[]>([]);
-
-  const addStep = () => {
-    setIsEnabled(!isEnabled);
-    if (stepName) {
-      const stepsArray = [...steps, stepName];
-      setSteps(stepsArray);
-      setStepName("");
-      console.log(steps);
-    }
-  };
   return (
     <>
       <Table className="hover:bg-none">
@@ -36,7 +27,7 @@ export default function AddStepsSection() {
                 <div>
                   <Button
                     variant="outline"
-                    onClick={addStep}
+                    onClick={() => setIsEnabled(!isEnabled)}
                     className="cursor-pointer"
                   >
                     {isEnabled ? "Cancel" : "Add steps"}
@@ -44,12 +35,29 @@ export default function AddStepsSection() {
                 </div>
                 <form
                   className="flex flex-col gap-4"
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
-                    const newSteps = [...steps, stepName];
-                    setSteps(newSteps);
-                    console.log("Submit:", newSteps);
-                    setStepName("");
+                    if (stepName) {
+                      try {
+                        const newSteps = [...steps, stepName];
+                        setSteps(newSteps);
+                        console.log("Submit:", newSteps);
+                        const formData = new FormData();
+                        formData.append("stepName", stepName);
+                        formData.append("projectId", projectId);
+                        await createStepAction(formData);
+                        setStepName("");
+                      } catch (error) {
+                        console.error("Error creating step:", error);
+                        alert(
+                          `Error: ${
+                            error instanceof Error
+                              ? error.message
+                              : "Unknown error"
+                          }`
+                        );
+                      }
+                    }
                   }}
                 >
                   <div className="flex items-center gap-2">

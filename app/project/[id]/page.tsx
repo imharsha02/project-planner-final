@@ -18,7 +18,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
       </div>
 
       {/* page content */}
-      <AddStepsSection />
+      <AddStepsSection projectId={id} />
     </>
   );
 };

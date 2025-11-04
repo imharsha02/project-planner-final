@@ -50,3 +50,37 @@ export async function createProjectAction(formData: FormData) {
 
   redirect("/Dashboard");
 }
+
+export async function createStepAction(formData: FormData) {
+  const stepName = formData.get("stepName") as string | null;
+  const projectId = formData.get("projectId") as string | null;
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to create a step.");
+  }
+  if (!stepName || !projectId) {
+    throw new Error("Step name and project ID are required.");
+  }
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("custom_steps_table")
+    .insert([
+      {
+        id: randomUUID(),
+        step: stepName,
+        project_id: projectId,
+      },
+    ])
+    .select();
+  if (error) {
+    console.error("Supabase Insertion Error:", error);
+    console.error("Error details:", JSON.stringify(error, null, 2));
+    throw new Error(
+      `Failed to create step: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  }
+  return data;
+}
