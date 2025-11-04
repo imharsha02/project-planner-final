@@ -11,25 +11,35 @@ import { TypographyP } from "./Typography/TypographyP";
 import {
   createStepAction,
   getStepsAction,
+  deleteStepAction,
 } from "@/app/actions/projectaActions";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [stepName, setStepName] = useState("");
-  const [steps, setSteps] = useState<string[]>([]);
+  const [steps, setSteps] = useState<Array<{ id: string; step: string }>>([]);
 
   // Fetch existing steps when component mounts
   useEffect(() => {
     const fetchSteps = async () => {
       try {
         const data = await getStepsAction(projectId);
-        setSteps(data?.map((step: any) => step.step) || []);
+        setSteps(data || []);
       } catch (error) {
         console.error("Error fetching steps:", error);
       }
     };
     fetchSteps();
   }, [projectId]);
+  const deleteStep = async (stepId: string) => {
+    try {
+      await deleteStepAction(stepId);
+      const allSteps = await getStepsAction(projectId);
+      setSteps(allSteps || []);
+    } catch (error) {
+      console.error("Error deleting step:", error);
+    }
+  };
   return (
     <>
       <Table className="hover:bg-none">
@@ -61,7 +71,7 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                         await createStepAction(formData);
                         // Fetch all steps again after adding a new one
                         const allSteps = await getStepsAction(projectId);
-                        setSteps(allSteps?.map((step: any) => step.step) || []);
+                        setSteps(allSteps || []);
                         setStepName("");
                       } catch (error) {
                         console.error("Error creating step:", error);
@@ -112,15 +122,22 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
       </Table>
       {steps.length > 0 &&
         steps.map((step, index) => (
-          <div key={index} className="flex my-2 items-center pb-3 border-b w-md gap-2">
+          <div
+            key={step.id}
+            className="flex my-2 items-center pb-3 border-b w-md gap-2"
+          >
             <TypographyP className="py-2">
-              {index + 1}. {step}
+              {index + 1}. {step.step}
             </TypographyP>
             <div className="flex items-center gap-2">
               <Button variant="outline" className="cursor-pointer">
                 <PencilIcon className="w-4 h-4" /> Edit
               </Button>
-              <Button variant="outline" className="cursor-pointer">
+              <Button
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => deleteStep(step.id)}
+              >
                 <TrashIcon className="w-4 h-4" /> Delete
               </Button>
             </div>

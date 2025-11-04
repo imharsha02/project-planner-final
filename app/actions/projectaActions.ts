@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import { auth } from "@/app/auth";
 import { randomUUID } from "crypto";
 
+// Create Supabase client once at module level (cached by Next.js)
+// The helper function also has internal caching, so this is safe and optimal
+const supabase = createServerSupabaseServiceClient();
+
 export async function createProjectAction(formData: FormData) {
   const projectDepartment = formData.get("department") as string | null;
   const projectName = formData.get("projectName") as string | null;
@@ -22,7 +26,6 @@ export async function createProjectAction(formData: FormData) {
     throw new Error("Department and project name are required.");
   }
 
-  const supabase = createServerSupabaseServiceClient();
   const { data, error } = await supabase
     .from("projects")
     .insert([
@@ -61,7 +64,6 @@ export async function createStepAction(formData: FormData) {
   if (!stepName || !projectId) {
     throw new Error("Step name and project ID are required.");
   }
-  const supabase = createServerSupabaseServiceClient();
   const { data, error } = await supabase
     .from("custom_steps_table")
     .insert([
@@ -93,7 +95,6 @@ export async function getStepsAction(projectId: string) {
   if (!projectId) {
     throw new Error("Project ID is required.");
   }
-  const supabase = createServerSupabaseServiceClient();
   const { data, error } = await supabase
     .from("custom_steps_table")
     .select("*")
@@ -102,6 +103,30 @@ export async function getStepsAction(projectId: string) {
     console.error("Supabase Error:", error);
     throw new Error(
       `Failed to fetch steps: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  }
+  return data;
+}
+
+export async function deleteStepAction(stepId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to delete a step.");
+  }
+  if (!stepId) {
+    throw new Error("Step ID is required.");
+  }
+  const { data, error } = await supabase
+    .from("custom_steps_table")
+    .delete()
+    .eq("id", stepId);
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to delete step: ${
         error.message ||
         "Unknown error. Check if you are logged in and registered."
       }`
