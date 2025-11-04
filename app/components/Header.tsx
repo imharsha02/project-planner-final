@@ -80,7 +80,10 @@ const Header = () => {
         </div>
       </div>
       {isAuthenticated && (
-        <Avatar className="h-10 w-10 absolute right-10">
+        <Avatar
+          className="h-10 w-10 absolute right-10"
+          title={userName || "User"}
+        >
           <AvatarImage src={userImage ?? undefined} alt={userName || "User"} />
           <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
         </Avatar>
