@@ -84,3 +84,28 @@ export async function createStepAction(formData: FormData) {
   }
   return data;
 }
+
+export async function getStepsAction(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to fetch steps.");
+  }
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
+  const supabase = createServerSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("custom_steps_table")
+    .select("*")
+    .eq("project_id", projectId);
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to fetch steps: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  }
+  return data;
+}

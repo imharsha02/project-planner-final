@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +8,28 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { TypographyH2 } from "@/app/components/Typography/TypographyH2";
 import { PlusIcon } from "lucide-react";
 import { TypographyP } from "./Typography/TypographyP";
-import { createStepAction } from "@/app/actions/projectaActions";
+import {
+  createStepAction,
+  getStepsAction,
+} from "@/app/actions/projectaActions";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [stepName, setStepName] = useState("");
   const [steps, setSteps] = useState<string[]>([]);
+
+  // Fetch existing steps when component mounts
+  useEffect(() => {
+    const fetchSteps = async () => {
+      try {
+        const data = await getStepsAction(projectId);
+        setSteps(data?.map((step: any) => step.step) || []);
+      } catch (error) {
+        console.error("Error fetching steps:", error);
+      }
+    };
+    fetchSteps();
+  }, [projectId]);
   return (
     <>
       <Table className="hover:bg-none">
@@ -39,13 +55,13 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                     e.preventDefault();
                     if (stepName) {
                       try {
-                        const newSteps = [...steps, stepName];
-                        setSteps(newSteps);
-                        console.log("Submit:", newSteps);
                         const formData = new FormData();
                         formData.append("stepName", stepName);
                         formData.append("projectId", projectId);
                         await createStepAction(formData);
+                        // Fetch all steps again after adding a new one
+                        const allSteps = await getStepsAction(projectId);
+                        setSteps(allSteps?.map((step: any) => step.step) || []);
                         setStepName("");
                       } catch (error) {
                         console.error("Error creating step:", error);
