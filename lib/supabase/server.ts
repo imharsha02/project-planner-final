@@ -11,7 +11,7 @@ let cachedClient: SupabaseClient | null = null;
  * Creates or returns a cached Supabase client with the service role key.
  * This uses a singleton pattern to optimize performance while maintaining
  * stateless behavior required for serverless/server actions.
- * 
+ *
  * Use this for authenticated server actions that already perform their own auth checks.
  * ⚠️ Warning: This bypasses RLS policies, so ensure proper authorization checks are in place.
  */
