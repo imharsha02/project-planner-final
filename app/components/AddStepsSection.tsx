@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { TypographyH2 } from "@/app/components/Typography/TypographyH2";
-import { PlusIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { TypographyP } from "./Typography/TypographyP";
 import {
   createStepAction,
@@ -112,9 +112,19 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
       </Table>
       {steps.length > 0 &&
         steps.map((step, index) => (
-          <TypographyP key={index}>
-            {index + 1}. {step}
-          </TypographyP>
+          <div key={index} className="flex my-2 items-center pb-3 border-b w-md gap-2">
+            <TypographyP className="py-2">
+              {index + 1}. {step}
+            </TypographyP>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" className="cursor-pointer">
+                <PencilIcon className="w-4 h-4" /> Edit
+              </Button>
+              <Button variant="outline" className="cursor-pointer">
+                <TrashIcon className="w-4 h-4" /> Delete
+              </Button>
+            </div>
+          </div>
         ))}
     </>
   );
