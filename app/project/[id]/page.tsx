@@ -1,7 +1,6 @@
 import React from "react";
 import { getProjects } from "@/app/lib/getProjects";
 import AddStepsSection from "@/app/components/AddStepsSection";
-
 const Page = async ({ params }: { params: { id: string } }) => {
   const { id } = params;
   const project = await getProjects();

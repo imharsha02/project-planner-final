@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { TypographyH2 } from "@/app/components/Typography/TypographyH2";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { TypographyP } from "./Typography/TypographyP";
@@ -14,11 +15,26 @@ import {
   deleteStepAction,
 } from "@/app/actions/projectaActions";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [stepName, setStepName] = useState("");
   const [steps, setSteps] = useState<Array<{ id: string; step: string }>>([]);
+  const [stepCompletion, setStepCompletion] = useState<Record<string, number>>(
+    {}
+  );
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
+  const [completionInputs, setCompletionInputs] = useState<
+    Record<string, string>
+  >({});
 
   // Fetch existing steps when component mounts
   useEffect(() => {
@@ -26,6 +42,16 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
       try {
         const data = await getStepsAction(projectId);
         setSteps(data || []);
+        // Show dialog if there are steps
+        if (data && data.length > 0) {
+          // Check if we've already asked (using sessionStorage)
+          const hasAsked = sessionStorage.getItem(
+            `completion-asked-${projectId}`
+          );
+          if (!hasAsked) {
+            setShowCompletionDialog(true);
+          }
+        }
       } catch (error) {
         console.error("Error fetching steps:", error);
       }
@@ -41,8 +67,79 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
       console.error("Error deleting step:", error);
     }
   };
+
+  const handleCompletionSubmit = () => {
+    const newCompletion: Record<string, number> = {};
+    steps.forEach((step) => {
+      const inputValue = completionInputs[step.id] || "0";
+      const percentage = Math.min(100, Math.max(0, parseInt(inputValue) || 0));
+      newCompletion[step.id] = percentage;
+    });
+    setStepCompletion(newCompletion);
+    setShowCompletionDialog(false);
+    sessionStorage.setItem(`completion-asked-${projectId}`, "true");
+  };
+
   return (
     <>
+      <Dialog
+        open={showCompletionDialog}
+        onOpenChange={setShowCompletionDialog}
+      >
+        <DialogContent onClose={() => setShowCompletionDialog(false)}>
+          <DialogHeader>
+            <DialogTitle>Step Completion Status</DialogTitle>
+            <DialogDescription>
+              Please let us know how far each step has been completed (0-100%).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            {steps.map((step, index) => (
+              <div key={step.id} className="space-y-2">
+                <Label htmlFor={`completion-${step.id}`}>
+                  {index + 1}. {step.step}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id={`completion-${step.id}`}
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="0"
+                    value={completionInputs[step.id] || ""}
+                    onChange={(e) => {
+                      setCompletionInputs((prev) => ({
+                        ...prev,
+                        [step.id]: e.target.value,
+                      }));
+                    }}
+                    className="w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Set all to 0 if skipped
+                const defaultCompletion: Record<string, number> = {};
+                steps.forEach((step) => {
+                  defaultCompletion[step.id] = 0;
+                });
+                setStepCompletion(defaultCompletion);
+                setShowCompletionDialog(false);
+                sessionStorage.setItem(`completion-asked-${projectId}`, "true");
+              }}
+            >
+              Skip
+            </Button>
+            <Button onClick={handleCompletionSubmit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Table className="hover:bg-none">
         <TableBody>
           <TableRow className="border-none">
@@ -141,7 +238,57 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
               >
                 <TrashIcon className="w-4 h-4" /> Delete
               </Button>
-              <Checkbox id={step.id} />
+
+              <div className="relative">
+                <PieChart width={100} height={100}>
+                  <Pie
+                    data={[
+                      {
+                        name: "completed",
+                        value: stepCompletion[step.id] || 0,
+                      },
+                      {
+                        name: "remaining",
+                        value: 100 - (stepCompletion[step.id] || 0),
+                      },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={50}
+                    innerRadius={30}
+                    startAngle={90}
+                    endAngle={-270}
+                    dataKey="value"
+                  >
+                    <Cell key="completed" fill="#8884d8" />
+                    <Cell key="remaining" fill="#e0e0e0" />
+                  </Pie>
+                  <Tooltip
+                    content={({ active }) => {
+                      if (active) {
+                        const completion = stepCompletion[step.id] || 0;
+                        return <p>{completion}%</p>;
+                      }
+                      return null;
+                    }}
+                  />
+                </PieChart>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-sm font-semibold">
+                    {stepCompletion[step.id] || 0}%
+                  </span>
+                </div>
+              </div>
+              <Checkbox
+                id={step.id}
+                checked={(stepCompletion[step.id] || 0) === 100}
+                onCheckedChange={(checked) => {
+                  setStepCompletion((prev) => ({
+                    ...prev,
+                    [step.id]: checked === true ? 100 : 0,
+                  }));
+                }}
+              />
             </div>
           </div>
         ))}
