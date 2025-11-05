@@ -13,6 +13,7 @@ import {
   getStepsAction,
   deleteStepAction,
 } from "@/app/actions/projectaActions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -140,6 +141,7 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
               >
                 <TrashIcon className="w-4 h-4" /> Delete
               </Button>
+              <Checkbox id={step.id} />
             </div>
           </div>
         ))}
