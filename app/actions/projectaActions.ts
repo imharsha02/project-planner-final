@@ -134,3 +134,26 @@ export async function deleteStepAction(stepId: string) {
   }
   return data;
 }
+
+export async function deleteProjectAction(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to delete a project.");
+  }
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
+  const { data, error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId);
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to delete project: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  } return data;
+}
