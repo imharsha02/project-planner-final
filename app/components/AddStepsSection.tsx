@@ -23,6 +23,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -35,6 +40,8 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [completionInputs, setCompletionInputs] = useState<
     Record<string, string>
   >({});
+  const [editingStepId, setEditingStepId] = useState<string | null>(null);
+  const [editCompletionValue, setEditCompletionValue] = useState<string>("");
 
   // Fetch existing steps when component mounts
   useEffect(() => {
@@ -239,55 +246,124 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                 <TrashIcon className="w-4 h-4" /> Delete
               </Button>
 
-              <div className="relative">
-                <PieChart width={100} height={100}>
-                  <Pie
-                    data={[
-                      {
-                        name: "completed",
-                        value: stepCompletion[step.id] || 0,
-                      },
-                      {
-                        name: "remaining",
-                        value: 100 - (stepCompletion[step.id] || 0),
-                      },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={50}
-                    innerRadius={30}
-                    startAngle={90}
-                    endAngle={-270}
-                    dataKey="value"
-                  >
-                    <Cell key="completed" fill="#8884d8" />
-                    <Cell key="remaining" fill="#e0e0e0" />
-                  </Pie>
-                  <Tooltip
-                    content={({ active }) => {
-                      if (active) {
-                        const completion = stepCompletion[step.id] || 0;
-                        return <p>{completion}%</p>;
-                      }
-                      return null;
-                    }}
-                  />
-                </PieChart>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-sm font-semibold">
-                    {stepCompletion[step.id] || 0}%
-                  </span>
-                </div>
-              </div>
+              <Popover
+                open={editingStepId === step.id}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setEditingStepId(null);
+                  } else {
+                    setEditingStepId(step.id);
+                    setEditCompletionValue(
+                      String(stepCompletion[step.id] || 0)
+                    );
+                  }
+                }}
+              >
+                <PopoverTrigger asChild>
+                  <div className="relative cursor-pointer">
+                    <PieChart width={100} height={100}>
+                      <Pie
+                        data={[
+                          {
+                            name: "completed",
+                            value: stepCompletion[step.id] || 0,
+                          },
+                          {
+                            name: "remaining",
+                            value: 100 - (stepCompletion[step.id] || 0),
+                          },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={50}
+                        innerRadius={30}
+                        startAngle={90}
+                        endAngle={-270}
+                        dataKey="value"
+                      >
+                        <Cell key="completed" fill="#8884d8" />
+                        <Cell key="remaining" fill="#e0e0e0" />
+                      </Pie>
+                      <Tooltip
+                        content={({ active }) => {
+                          if (active) {
+                            const completion = stepCompletion[step.id] || 0;
+                            return <p>{completion}%</p>;
+                          }
+                          return null;
+                        }}
+                      />
+                    </PieChart>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span className="text-sm font-semibold">
+                        {stepCompletion[step.id] || 0}%
+                      </span>
+                    </div>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-64">
+                  <div className="space-y-3">
+                    <Label htmlFor={`edit-completion-${step.id}`}>
+                      Completion Percentage
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id={`edit-completion-${step.id}`}
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editCompletionValue}
+                        onChange={(e) => setEditCompletionValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const percentage = Math.min(
+                              100,
+                              Math.max(0, parseInt(editCompletionValue) || 0)
+                            );
+                            setStepCompletion((prev) => ({
+                              ...prev,
+                              [step.id]: percentage,
+                            }));
+                            setEditingStepId(null);
+                          }
+                        }}
+                        className="w-24"
+                        autoFocus
+                      />
+                      <span className="text-sm text-muted-foreground">%</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          const percentage = Math.min(
+                            100,
+                            Math.max(0, parseInt(editCompletionValue) || 0)
+                          );
+                          setStepCompletion((prev) => ({
+                            ...prev,
+                            [step.id]: percentage,
+                          }));
+                          setEditingStepId(null);
+                        }}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingStepId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Checkbox
                 id={step.id}
                 checked={(stepCompletion[step.id] || 0) === 100}
-                onCheckedChange={(checked) => {
-                  setStepCompletion((prev) => ({
-                    ...prev,
-                    [step.id]: checked === true ? 100 : 0,
-                  }));
-                }}
+                disabled
               />
             </div>
           </div>
