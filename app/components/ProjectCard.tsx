@@ -29,8 +29,8 @@ export function ProjectCard({
 
   return (
     <div key={id} className="w-max mx-auto">
-      <Card className="w-max p-4 px-0 hover:shadow-2xs transition">
-        <CardHeader className="flex items-center justify-between border-b">
+      <Card className="w-max px-0 hover:shadow-2xs transition">
+        <CardHeader className="flex items-center border-b px-3 justify-between">
           <CardTitle>{project_name}</CardTitle>
           <Button
             variant="outline"
@@ -44,9 +44,10 @@ export function ProjectCard({
           onClick={() => router.push(`/project/${id}`)}
           className="flex flex-col gap-2 cursor-pointer"
         >
-          <p>{department}</p>
-          <p>{start_date}</p>
-          <p>{end_date}</p>
+          <p><span className="font-bold">Department:</span> {department}</p>
+          <p><span className="font-bold">Start Date:</span> {start_date}</p>
+          <p><span className="font-bold">End Date:</span> {end_date}</p>
+          
         </CardContent>
       </Card>
     </div>
