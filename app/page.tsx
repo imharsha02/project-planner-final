@@ -51,6 +51,25 @@ const Page = () => {
           </TypographyP>
         </motion.div>
 
+        {!isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="w-full mx-auto text-center space-y-3 sm:space-y-4"
+          >
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              className="text-base sm:text-lg md:text-xl font-medium text-foreground/90"
+            >
+              Get started by registering to start planning your projects and
+              organizing your work.
+            </motion.p>
+          </motion.div>
+        )}
+
         {isAuthenticated && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
