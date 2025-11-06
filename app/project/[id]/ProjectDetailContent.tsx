@@ -2,6 +2,10 @@
 import React from "react";
 import AddStepsSection from "@/app/components/AddStepsSection";
 import { motion } from "motion/react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ProjectDetailContentProps {
   projectId: string;
@@ -20,6 +24,10 @@ const ProjectDetailContent = ({
   startDate,
   endDate,
 }: ProjectDetailContentProps) => {
+  const [isGroupProject, setIsGroupProject] = useState(false);
+  const handleGroupProject = (value: string) => {
+    setIsGroupProject(value === "yes");
+  };
   return (
     <div className="min-h-screen py-8 space-y-8">
       {/* Heading */}
@@ -60,6 +68,7 @@ const ProjectDetailContent = ({
 
       {/* page content */}
       <AddStepsSection projectId={projectId} />
+      {/* If the number of steps is more than 5, ask if it's a group project */}
     </div>
   );
 };
