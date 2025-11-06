@@ -153,15 +153,20 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                           }
                         }}
                       >
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor="step-name">Step:</Label>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                          <Label
+                            htmlFor="step-name"
+                            className="text-sm sm:text-base"
+                          >
+                            Step:
+                          </Label>
                           <Input
                             id="step-name"
                             placeholder="Enter step name"
                             value={stepName}
                             onChange={(e) => setStepName(e.target.value)}
                             disabled={!isEnabled}
-                            className="w-1/2 transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                            className="w-full sm:w-1/2 transition-all duration-200 focus:ring-2 focus:ring-primary/50"
                           />
                         </div>
                         <motion.div
@@ -190,9 +195,10 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                   <Button
                     variant="outline"
                     title="Generate with AI"
-                    className="cursor-pointer transition-all duration-200 hover:shadow-md bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20"
+                    className="cursor-pointer transition-all duration-200 hover:shadow-md bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 text-xs sm:text-sm px-3 sm:px-4 py-2"
                   >
-                    Generate with AI
+                    <span className="hidden sm:inline">Generate with AI</span>
+                    <span className="sm:hidden">AI</span>
                   </Button>
                 </motion.div>
               </TableCell>
@@ -220,18 +226,18 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                     ease: [0.21, 1.11, 0.81, 0.99],
                   }}
                   layout
-                  className="flex my-2 items-center pb-4 border-b border-border/50 w-full gap-4 p-4 rounded-lg bg-card/50 hover:bg-card transition-all duration-200 group"
+                  className="flex flex-col sm:flex-row my-2 items-start sm:items-center pb-4 border-b border-border/50 w-full gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-card/50 hover:bg-card transition-all duration-200 group"
                 >
                   {editingStepId === step.id ? (
                     <motion.div
                       initial={{ scale: 0.9 }}
                       animate={{ scale: 1 }}
-                      className="flex-1"
+                      className="flex-1 w-full sm:w-auto"
                     >
                       <Input
                         value={editingStepName}
                         onChange={(e) => setEditingStepName(e.target.value)}
-                        className="flex-1 transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                        className="w-full transition-all duration-200 focus:ring-2 focus:ring-primary/50"
                         placeholder="Enter step name"
                         autoFocus
                       />
@@ -240,9 +246,9 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                     <motion.div
                       whileHover={{ x: 4 }}
                       transition={{ type: "spring", stiffness: 400 }}
-                      className="flex-1"
+                      className="flex-1 w-full sm:w-auto"
                     >
-                      <TypographyP className="py-2 text-lg">
+                      <TypographyP className="py-2 text-base sm:text-lg">
                         <span className="font-semibold text-primary">
                           {index + 1}.
                         </span>{" "}
@@ -250,7 +256,7 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                       </TypographyP>
                     </motion.div>
                   )}
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     {editingStepId === step.id ? (
                       <>
                         <motion.div
@@ -318,49 +324,57 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                     )}
 
                     <motion.div
-                      className="relative"
+                      className="relative flex-shrink-0"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ type: "spring", stiffness: 200 }}
                     >
-                      <PieChart width={100} height={100}>
-                        <Pie
-                          data={[
-                            {
-                              name: "completed",
-                              value: stepCompletion[step.id] || 0,
-                            },
-                            {
-                              name: "remaining",
-                              value: 100 - (stepCompletion[step.id] || 0),
-                            },
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={50}
-                          innerRadius={30}
-                          startAngle={90}
-                          endAngle={-270}
-                          dataKey="value"
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-[100px] md:h-[100px]">
+                        <PieChart
+                          width={100}
+                          height={100}
+                          className="w-full h-full"
                         >
-                          <Cell key="completed" fill="#8884d8" />
-                          <Cell key="remaining" fill="#e0e0e0" />
-                        </Pie>
-                        <Tooltip
-                          content={({ active }) => {
-                            if (active) {
-                              const completion = stepCompletion[step.id] || 0;
-                              return (
-                                <div className="bg-card border border-border rounded-lg p-2 shadow-lg">
-                                  <p className="font-semibold">{completion}%</p>
-                                </div>
-                              );
-                            }
-                            return null;
-                          }}
-                        />
-                      </PieChart>
+                          <Pie
+                            data={[
+                              {
+                                name: "completed",
+                                value: stepCompletion[step.id] || 0,
+                              },
+                              {
+                                name: "remaining",
+                                value: 100 - (stepCompletion[step.id] || 0),
+                              },
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={40}
+                            innerRadius={24}
+                            startAngle={90}
+                            endAngle={-270}
+                            dataKey="value"
+                          >
+                            <Cell key="completed" fill="#8884d8" />
+                            <Cell key="remaining" fill="#e0e0e0" />
+                          </Pie>
+                          <Tooltip
+                            content={({ active }) => {
+                              if (active) {
+                                const completion = stepCompletion[step.id] || 0;
+                                return (
+                                  <div className="bg-card border border-border rounded-lg p-2 shadow-lg">
+                                    <p className="font-semibold">
+                                      {completion}%
+                                    </p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                        </PieChart>
+                      </div>
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <span className="text-sm font-semibold">
+                        <span className="text-xs sm:text-sm font-semibold">
                           {stepCompletion[step.id] || 0}%
                         </span>
                       </div>

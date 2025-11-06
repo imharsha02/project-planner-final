@@ -95,7 +95,7 @@ const ProjectDetailsForm = ({
       transition={{ duration: 0.5 }}
     >
       <Card className="w-full max-w-2xl mx-auto shadow-lg border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <Form {...form}>
             <motion.form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -113,15 +113,15 @@ const ProjectDetailsForm = ({
                   control={form.control}
                   name="projectName"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-4">
-                      <FormLabel className="min-w-[120px] font-semibold">
+                    <FormItem className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <FormLabel className="min-w-[120px] font-semibold text-sm sm:text-base">
                         Project Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Name your project"
                           {...field}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/50 w-full"
                         />
                       </FormControl>
                     </FormItem>
@@ -138,8 +138,8 @@ const ProjectDetailsForm = ({
                   control={form.control}
                   name="department"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-4">
-                      <FormLabel className="min-w-[120px] font-semibold">
+                    <FormItem className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <FormLabel className="min-w-[120px] font-semibold text-sm sm:text-base">
                         Department
                       </FormLabel>
                       <FormControl>
@@ -147,7 +147,7 @@ const ProjectDetailsForm = ({
                           onValueChange={field.onChange}
                           value={field.value}
                         >
-                          <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/50">
+                          <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-primary/50 w-full">
                             <SelectValue placeholder="Select a department" />
                           </SelectTrigger>
                           <SelectContent>
@@ -175,8 +175,8 @@ const ProjectDetailsForm = ({
                   control={form.control}
                   name="startDate"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-4">
-                      <FormLabel className="min-w-[120px] font-semibold">
+                    <FormItem className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <FormLabel className="min-w-[120px] font-semibold text-sm sm:text-base">
                         Start Date
                       </FormLabel>
                       <FormControl>
@@ -199,8 +199,8 @@ const ProjectDetailsForm = ({
                   control={form.control}
                   name="endDate"
                   render={({ field }) => (
-                    <FormItem className="flex items-center gap-4">
-                      <FormLabel className="min-w-[120px] font-semibold">
+                    <FormItem className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <FormLabel className="min-w-[120px] font-semibold text-sm sm:text-base">
                         End Date
                       </FormLabel>
                       <FormControl>
@@ -223,8 +223,8 @@ const ProjectDetailsForm = ({
                   control={form.control}
                   name="thumbnail"
                   render={({ field: { value, onChange, ...field } }) => (
-                    <FormItem className="flex items-center gap-4">
-                      <FormLabel className="min-w-[120px] font-semibold">
+                    <FormItem className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <FormLabel className="min-w-[120px] font-semibold text-sm sm:text-base">
                         Thumbnail
                       </FormLabel>
                       <FormControl>
@@ -232,7 +232,7 @@ const ProjectDetailsForm = ({
                           type="file"
                           onChange={(e) => onChange(e.target.files?.[0])}
                           {...field}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                          className="transition-all duration-200 focus:ring-2 focus:ring-primary/50 w-full"
                         />
                       </FormControl>
                     </FormItem>
@@ -249,15 +249,15 @@ const ProjectDetailsForm = ({
                   control={form.control}
                   name="projectDetails"
                   render={({ field }) => (
-                    <FormItem className="flex items-start gap-4">
-                      <FormLabel className="min-w-[120px] font-semibold pt-2">
+                    <FormItem className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <FormLabel className="min-w-[120px] font-semibold pt-2 text-sm sm:text-base">
                         Project Details
                       </FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Short description of your project"
                           {...field}
-                          className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                          className="min-h-[100px] transition-all duration-200 focus:ring-2 focus:ring-primary/50 w-full"
                         />
                       </FormControl>
                     </FormItem>
