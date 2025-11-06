@@ -16,6 +16,7 @@ import {
   updateStepAction,
 } from "@/app/actions/projectaActions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -93,207 +94,298 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
   };
 
   return (
-    <>
-      <Table className="hover:bg-none">
-        <TableBody>
-          <TableRow className="border-none">
-            <TableCell>
-              <TypographyH2 className="text-center border-none tracking-wide mb-4">
-                Add custom steps
-              </TypographyH2>
-              <div className="flex flex-col gap-4">
-                <div>
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Table className="hover:bg-none">
+          <TableBody>
+            <TableRow className="border-none">
+              <TableCell>
+                <TypographyH2 className="text-center border-none tracking-wide mb-6">
+                  Add custom steps
+                </TypographyH2>
+                <div className="flex flex-col gap-4">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEnabled(!isEnabled)}
+                      className="cursor-pointer transition-all duration-200 hover:shadow-md"
+                    >
+                      {isEnabled ? "Cancel" : "Add steps"}
+                    </Button>
+                  </motion.div>
+                  <AnimatePresence>
+                    {isEnabled && (
+                      <motion.form
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col gap-4 overflow-hidden"
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (stepName) {
+                            try {
+                              const formData = new FormData();
+                              formData.append("stepName", stepName);
+                              formData.append("projectId", projectId);
+                              await createStepAction(formData);
+                              // Fetch all steps again after adding a new one
+                              const allSteps = await getStepsAction(projectId);
+                              setSteps(allSteps || []);
+                              setStepName("");
+                            } catch (error) {
+                              console.error("Error creating step:", error);
+                              alert(
+                                `Error: ${
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Unknown error"
+                                }`
+                              );
+                            }
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="step-name">Step:</Label>
+                          <Input
+                            id="step-name"
+                            placeholder="Enter step name"
+                            value={stepName}
+                            onChange={(e) => setStepName(e.target.value)}
+                            disabled={!isEnabled}
+                            className="w-1/2 transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                          />
+                        </div>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Button
+                            type="submit"
+                            className="w-2/3 cursor-pointer transition-all duration-200 hover:shadow-md"
+                            disabled={!isEnabled}
+                          >
+                            <PlusIcon className="w-4 h-4" />
+                            Add Step
+                          </Button>
+                        </motion.div>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </TableCell>
+              <TableCell className="text-center align-top">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
                     variant="outline"
-                    onClick={() => setIsEnabled(!isEnabled)}
-                    className="cursor-pointer"
+                    title="Generate with AI"
+                    className="cursor-pointer transition-all duration-200 hover:shadow-md bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20"
                   >
-                    {isEnabled ? "Cancel" : "Add steps"}
+                    Generate with AI
                   </Button>
-                </div>
-                <form
-                  className="flex flex-col gap-4"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (stepName) {
-                      try {
-                        const formData = new FormData();
-                        formData.append("stepName", stepName);
-                        formData.append("projectId", projectId);
-                        await createStepAction(formData);
-                        // Fetch all steps again after adding a new one
-                        const allSteps = await getStepsAction(projectId);
-                        setSteps(allSteps || []);
-                        setStepName("");
-                      } catch (error) {
-                        console.error("Error creating step:", error);
-                        alert(
-                          `Error: ${
-                            error instanceof Error
-                              ? error.message
-                              : "Unknown error"
-                          }`
-                        );
-                      }
-                    }
+                </motion.div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </motion.div>
+      <div className="space-y-3">
+        <AnimatePresence mode="popLayout">
+          {steps.length > 0 &&
+            steps.map((step, index) => {
+              if (!step || !step.id) {
+                console.warn("Invalid step data:", step);
+                return null;
+              }
+              return (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: index * 0.05,
+                    ease: [0.21, 1.11, 0.81, 0.99],
                   }}
+                  layout
+                  className="flex my-2 items-center pb-4 border-b border-border/50 w-full gap-4 p-4 rounded-lg bg-card/50 hover:bg-card transition-all duration-200 group"
                 >
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="step-name">Step:</Label>
-                    <Input
-                      id="step-name"
-                      placeholder="Enter step name"
-                      value={stepName}
-                      onChange={(e) => setStepName(e.target.value)}
-                      disabled={!isEnabled}
-                      className="w-1/2"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-2/3 cursor-pointer"
-                    disabled={!isEnabled}
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    Add Step
-                  </Button>
-                </form>
-              </div>
-            </TableCell>
-            <TableCell className="text-center align-top">
-              <Button
-                variant="outline"
-                title="Generate with AI"
-                className="cursor-pointer"
-              >
-                Generate with AI
-              </Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-      {steps.length > 0 &&
-        steps.map((step, index) => {
-          if (!step || !step.id) {
-            console.warn("Invalid step data:", step);
-            return null;
-          }
-          return (
-            <div
-              key={step.id}
-              className="flex my-2 items-center pb-3 border-b w-md gap-2"
-            >
-              {editingStepId === step.id ? (
-                <Input
-                  value={editingStepName}
-                  onChange={(e) => setEditingStepName(e.target.value)}
-                  className="flex-1"
-                  placeholder="Enter step name"
-                  autoFocus
-                />
-              ) : (
-                <TypographyP className="py-2">
-                  {index + 1}. {step.step}
-                </TypographyP>
-              )}
-              <div className="flex items-center gap-2">
-                {editingStepId === step.id ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => handleUpdateStep(step.id)}
+                  {editingStepId === step.id ? (
+                    <motion.div
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: 1 }}
+                      className="flex-1"
                     >
-                      Done
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={handleCancelEdit}
+                      <Input
+                        value={editingStepName}
+                        onChange={(e) => setEditingStepName(e.target.value)}
+                        className="flex-1 transition-all duration-200 focus:ring-2 focus:ring-primary/50"
+                        placeholder="Enter step name"
+                        autoFocus
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      whileHover={{ x: 4 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                      className="flex-1"
                     >
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => {
-                        console.log("Edit button clicked for step:", step);
-                        handleEdit(step.id, step.step);
-                      }}
-                    >
-                      <PencilIcon className="w-4 h-4" /> Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => deleteStep(step.id)}
-                    >
-                      <TrashIcon className="w-4 h-4" /> Delete
-                    </Button>
-                  </>
-                )}
+                      <TypographyP className="py-2 text-lg">
+                        <span className="font-semibold text-primary">
+                          {index + 1}.
+                        </span>{" "}
+                        {step.step}
+                      </TypographyP>
+                    </motion.div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    {editingStepId === step.id ? (
+                      <>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="cursor-pointer transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
+                            onClick={() => handleUpdateStep(step.id)}
+                          >
+                            Done
+                          </Button>
+                        </motion.div>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="cursor-pointer transition-all duration-200 hover:bg-destructive/10 hover:border-destructive/30"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </Button>
+                        </motion.div>
+                      </>
+                    ) : (
+                      <>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="cursor-pointer transition-all duration-200 hover:shadow-md"
+                            onClick={() => {
+                              console.log(
+                                "Edit button clicked for step:",
+                                step
+                              );
+                              handleEdit(step.id, step.step);
+                            }}
+                          >
+                            <PencilIcon className="w-4 h-4" /> Edit
+                          </Button>
+                        </motion.div>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="cursor-pointer transition-all duration-200 hover:bg-destructive/10 hover:border-destructive/30 hover:shadow-md"
+                            onClick={() => deleteStep(step.id)}
+                          >
+                            <TrashIcon className="w-4 h-4" /> Delete
+                          </Button>
+                        </motion.div>
+                      </>
+                    )}
 
-                <div className="relative">
-                  <PieChart width={100} height={100}>
-                    <Pie
-                      data={[
-                        {
-                          name: "completed",
-                          value: stepCompletion[step.id] || 0,
-                        },
-                        {
-                          name: "remaining",
-                          value: 100 - (stepCompletion[step.id] || 0),
-                        },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={50}
-                      innerRadius={30}
-                      startAngle={90}
-                      endAngle={-270}
-                      dataKey="value"
+                    <motion.div
+                      className="relative"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 200 }}
                     >
-                      <Cell key="completed" fill="#8884d8" />
-                      <Cell key="remaining" fill="#e0e0e0" />
-                    </Pie>
-                    <Tooltip
-                      content={({ active }) => {
-                        if (active) {
-                          const completion = stepCompletion[step.id] || 0;
-                          return <p>{completion}%</p>;
-                        }
-                        return null;
-                      }}
-                    />
-                  </PieChart>
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-sm font-semibold">
-                      {stepCompletion[step.id] || 0}%
-                    </span>
+                      <PieChart width={100} height={100}>
+                        <Pie
+                          data={[
+                            {
+                              name: "completed",
+                              value: stepCompletion[step.id] || 0,
+                            },
+                            {
+                              name: "remaining",
+                              value: 100 - (stepCompletion[step.id] || 0),
+                            },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={50}
+                          innerRadius={30}
+                          startAngle={90}
+                          endAngle={-270}
+                          dataKey="value"
+                        >
+                          <Cell key="completed" fill="#8884d8" />
+                          <Cell key="remaining" fill="#e0e0e0" />
+                        </Pie>
+                        <Tooltip
+                          content={({ active }) => {
+                            if (active) {
+                              const completion = stepCompletion[step.id] || 0;
+                              return (
+                                <div className="bg-card border border-border rounded-lg p-2 shadow-lg">
+                                  <p className="font-semibold">{completion}%</p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                      </PieChart>
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="text-sm font-semibold">
+                          {stepCompletion[step.id] || 0}%
+                        </span>
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Checkbox
+                        id={step.id}
+                        checked={(stepCompletion[step.id] || 0) === 100}
+                        onCheckedChange={(checked) => {
+                          setStepCompletion((prev) => ({
+                            ...prev,
+                            [step.id]: checked === true ? 100 : 0,
+                          }));
+                        }}
+                      />
+                    </motion.div>
                   </div>
-                </div>
-                <Checkbox
-                  id={step.id}
-                  checked={(stepCompletion[step.id] || 0) === 100}
-                  onCheckedChange={(checked) => {
-                    setStepCompletion((prev) => ({
-                      ...prev,
-                      [step.id]: checked === true ? 100 : 0,
-                    }));
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-    </>
+                </motion.div>
+              );
+            })}
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }

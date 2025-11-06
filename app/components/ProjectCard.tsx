@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteProjectAction } from "@/app/actions/projectaActions";
+import { motion } from "motion/react";
 
 interface ProjectCardProps {
   id: string;
@@ -11,6 +12,7 @@ interface ProjectCardProps {
   department: string;
   start_date: string | null;
   end_date: string | null;
+  index?: number;
 }
 
 export function ProjectCard({
@@ -19,6 +21,7 @@ export function ProjectCard({
   department,
   start_date,
   end_date,
+  index = 0,
 }: ProjectCardProps) {
   const router = useRouter();
 
@@ -28,28 +31,68 @@ export function ProjectCard({
   };
 
   return (
-    <div key={id} className="w-max mx-auto">
-      <Card className="w-max px-0 hover:shadow-2xs transition">
-        <CardHeader className="flex items-center border-b px-3 justify-between">
-          <CardTitle>{project_name}</CardTitle>
-          <Button
-            variant="outline"
-            className="cursor-pointer rounded-full w-max"
-            onClick={() => deleteProject(id)}
+    <motion.div
+      key={id}
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.1,
+        ease: [0.21, 1.11, 0.81, 0.99],
+      }}
+      whileHover={{
+        y: -8,
+        scale: 1.02,
+        transition: { duration: 0.2 },
+      }}
+      className="w-full max-w-sm"
+    >
+      <Card className="w-full h-full px-0 hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm group overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <CardHeader className="flex items-center border-b px-4 py-3 justify-between relative z-10 bg-gradient-to-r from-card to-card/95">
+          <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors duration-200">
+            {project_name}
+          </CardTitle>
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <Trash2Icon />
-          </Button>
+            <Button
+              variant="outline"
+              className="cursor-pointer rounded-full w-8 h-8 p-0 hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteProject(id);
+              }}
+            >
+              <Trash2Icon className="w-4 h-4" />
+            </Button>
+          </motion.div>
         </CardHeader>
         <CardContent
           onClick={() => router.push(`/project/${id}`)}
-          className="flex flex-col gap-2 cursor-pointer"
+          className="flex flex-col gap-3 cursor-pointer p-4 relative z-10"
         >
-          <p><span className="font-bold">Department:</span> {department}</p>
-          <p><span className="font-bold">Start Date:</span> {start_date}</p>
-          <p><span className="font-bold">End Date:</span> {end_date}</p>
-          
+          <p className="text-sm">
+            <span className="font-semibold text-muted-foreground">
+              Department:
+            </span>{" "}
+            <span className="text-foreground">{department}</span>
+          </p>
+          <p className="text-sm">
+            <span className="font-semibold text-muted-foreground">
+              Start Date:
+            </span>{" "}
+            <span className="text-foreground">{start_date || "Not set"}</span>
+          </p>
+          <p className="text-sm">
+            <span className="font-semibold text-muted-foreground">
+              End Date:
+            </span>{" "}
+            <span className="text-foreground">{end_date || "Not set"}</span>
+          </p>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
