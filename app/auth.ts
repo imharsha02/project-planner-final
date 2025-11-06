@@ -19,15 +19,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  trustHost: true, // Required for Vercel and other hosting platforms
   session: {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, profile }) {
+    async jwt({ token, profile, account }) {
       if (profile) {
-        const googleId = profile.id || profile.sub;
-        if (googleId) {
-          token.userId = googleId;
+        // Handle both Google and GitHub
+        const uniqueId = profile.id || profile.sub;
+        if (uniqueId) {
+          token.userId = uniqueId;
         }
       }
       return token;
@@ -40,16 +42,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async signIn({ account, profile }) {
-      const uniqueId = profile?.id || profile?.sub; // Use the confirmed unique ID
+      try {
+        const uniqueId = profile?.id || profile?.sub;
 
-      if (uniqueId) {
-        await supabase.from("new_users").upsert({
-          id: uniqueId,
-          person_name: profile.name,
-          person_email: profile.email,
-        });
+        if (!uniqueId) {
+          console.error("No unique ID found in profile:", profile);
+          return false;
+        }
+
+        // Upsert user to database
+        const { error } = await supabase.from("new_users").upsert(
+          {
+            id: uniqueId,
+            person_name: profile?.name || null,
+            person_email: profile?.email || null,
+          },
+          {
+            onConflict: "id",
+          }
+        );
+
+        if (error) {
+          console.error("Error upserting user:", error);
+          // Don't block sign-in if database operation fails
+          // but log the error for debugging
+        }
+
+        return true;
+      } catch (error) {
+        console.error("Error in signIn callback:", error);
+        // Return true to allow sign-in even if database operation fails
+        return true;
       }
-      return true;
     },
   },
 });
