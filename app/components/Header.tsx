@@ -28,12 +28,11 @@ const Header = () => {
     >
       <div className="flex items-center rounded-full bg-gradient-to-r from-gray-50 to-gray-100/80 my-3 justify-between px-3 sm:px-6 py-2 w-full sm:w-[90%] md:w-2/3 lg:w-1/2 shadow-md border border-border/20 mx-2 sm:mx-0">
         <motion.div
-          whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
           className="flex-shrink-0"
         >
           <TypographyH1 className="py-2 sm:py-3 text-xl sm:text-2xl md:text-3xl tracking-wide bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            Project planner
+            <Link href="/">Project planner</Link>
           </TypographyH1>
         </motion.div>
 
