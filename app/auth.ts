@@ -51,46 +51,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return false;
         }
 
-        // Upsert user to database
+        // Insert user to database
         // Note: id is int8 (auto-increment), so we don't set it
         // user_id stores the OAuth provider's unique identifier
-        // uid is a UUID for the user (only generate if new user)
+        // uid is a UUID for the user
         const userId = String(uniqueId);
 
-        // Check if user already exists
-        const { data: existingUser } = await supabase
-          .from("new_users")
-          .select("uid")
-          .eq("user_id", userId)
-          .single();
-
-        // Prepare upsert data
-        const upsertData: {
+        // Prepare insert data
+        const insertData: {
           user_id: string;
           e: string | null;
           person_email: string | null;
-          uid?: string;
+          uid: string;
         } = {
           user_id: userId,
           e: profile?.name || null,
           person_email: profile?.email || null,
+          uid: randomUUID(),
         };
 
-        // Only set uid if user doesn't exist
-        if (!existingUser) {
-          upsertData.uid = randomUUID();
-        }
-
-        const { error } = await supabase.from("new_users").upsert(upsertData, {
-          onConflict: "user_id",
+        console.log("Attempting to insert user:", {
+          user_id: insertData.user_id,
+          e: insertData.e,
+          person_email: insertData.person_email,
+          uid: insertData.uid,
         });
 
+        const { data: insertResult, error } = await supabase
+          .from("new_users")
+          .insert(insertData)
+          .select();
+
         if (error) {
-          console.error("Error upserting user:", error);
+          console.error("Error inserting user:", error);
+          console.error("Error details:", {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+          });
           // Don't block sign-in if database operation fails
           // but log the error for debugging
+        } else {
+          console.log("User inserted successfully:", insertResult);
         }
-        console.log("User upserted successfully");
         return true;
       } catch (error) {
         console.error("Error in signIn callback:", error);
