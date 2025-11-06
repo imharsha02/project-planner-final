@@ -90,7 +90,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Don't block sign-in if database operation fails
           // but log the error for debugging
         }
-
+        console.log("User upserted successfully");
         return true;
       } catch (error) {
         console.error("Error in signIn callback:", error);
