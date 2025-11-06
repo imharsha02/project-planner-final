@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+import { randomUUID } from "crypto";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,16 +52,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Upsert user to database
-        const { error } = await supabase.from("new_users").upsert(
-          {
-            id: uniqueId,
-            person_name: profile?.name || null,
-            person_email: profile?.email || null,
-          },
-          {
-            onConflict: "id",
-          }
-        );
+        // Note: id is int8 (auto-increment), so we don't set it
+        // user_id stores the OAuth provider's unique identifier
+        // uid is a UUID for the user (only generate if new user)
+        const userId = String(uniqueId);
+
+        // Check if user already exists
+        const { data: existingUser } = await supabase
+          .from("new_users")
+          .select("uid")
+          .eq("user_id", userId)
+          .single();
+
+        // Prepare upsert data
+        const upsertData: {
+          user_id: string;
+          e: string | null;
+          person_email: string | null;
+          uid?: string;
+        } = {
+          user_id: userId,
+          e: profile?.name || null,
+          person_email: profile?.email || null,
+        };
+
+        // Only set uid if user doesn't exist
+        if (!existingUser) {
+          upsertData.uid = randomUUID();
+        }
+
+        const { error } = await supabase.from("new_users").upsert(upsertData, {
+          onConflict: "user_id",
+        });
 
         if (error) {
           console.error("Error upserting user:", error);
