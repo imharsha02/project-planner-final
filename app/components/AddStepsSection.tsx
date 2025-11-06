@@ -13,21 +13,9 @@ import {
   createStepAction,
   getStepsAction,
   deleteStepAction,
+  updateStepAction,
 } from "@/app/actions/projectaActions";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -36,29 +24,21 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
   const [stepCompletion, setStepCompletion] = useState<Record<string, number>>(
     {}
   );
-  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
-  const [completionInputs, setCompletionInputs] = useState<
-    Record<string, string>
-  >({});
   const [editingStepId, setEditingStepId] = useState<string | null>(null);
-  const [editCompletionValue, setEditCompletionValue] = useState<string>("");
+  const [editingStepName, setEditingStepName] = useState<string>("");
+
+  // Debug: Log when editingStepId changes
+  useEffect(() => {
+    console.log("editingStepId changed to:", editingStepId);
+  }, [editingStepId]);
 
   // Fetch existing steps when component mounts
   useEffect(() => {
     const fetchSteps = async () => {
       try {
         const data = await getStepsAction(projectId);
+        console.log("Fetched steps data:", data);
         setSteps(data || []);
-        // Show dialog if there are steps
-        if (data && data.length > 0) {
-          // Check if we've already asked (using sessionStorage)
-          const hasAsked = sessionStorage.getItem(
-            `completion-asked-${projectId}`
-          );
-          if (!hasAsked) {
-            setShowCompletionDialog(true);
-          }
-        }
       } catch (error) {
         console.error("Error fetching steps:", error);
       }
@@ -75,78 +55,45 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
     }
   };
 
-  const handleCompletionSubmit = () => {
-    const newCompletion: Record<string, number> = {};
-    steps.forEach((step) => {
-      const inputValue = completionInputs[step.id] || "0";
-      const percentage = Math.min(100, Math.max(0, parseInt(inputValue) || 0));
-      newCompletion[step.id] = percentage;
-    });
-    setStepCompletion(newCompletion);
-    setShowCompletionDialog(false);
-    sessionStorage.setItem(`completion-asked-${projectId}`, "true");
+  const handleEdit = (stepId: string, currentStepName: string) => {
+    console.log("handleEdit called with:", stepId, currentStepName);
+    setEditingStepId(stepId);
+    setEditingStepName(currentStepName);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingStepId(null);
+    setEditingStepName("");
+  };
+
+  const handleUpdateStep = async (stepId: string) => {
+    if (!editingStepName.trim()) {
+      alert("Step name cannot be empty");
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("stepId", stepId);
+      formData.append("stepName", editingStepName);
+      await updateStepAction(formData);
+      // Update the step in place to maintain position
+      setSteps((prevSteps) =>
+        prevSteps.map((step) =>
+          step.id === stepId ? { ...step, step: editingStepName } : step
+        )
+      );
+      setEditingStepId(null);
+      setEditingStepName("");
+    } catch (error) {
+      console.error("Error updating step:", error);
+      alert(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   };
 
   return (
     <>
-      <Dialog
-        open={showCompletionDialog}
-        onOpenChange={setShowCompletionDialog}
-      >
-        <DialogContent onClose={() => setShowCompletionDialog(false)}>
-          <DialogHeader>
-            <DialogTitle>Step Completion Status</DialogTitle>
-            <DialogDescription>
-              Please let us know how far each step has been completed (0-100%).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-            {steps.map((step, index) => (
-              <div key={step.id} className="space-y-2">
-                <Label htmlFor={`completion-${step.id}`}>
-                  {index + 1}. {step.step}
-                </Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id={`completion-${step.id}`}
-                    type="number"
-                    min="0"
-                    max="100"
-                    placeholder="0"
-                    value={completionInputs[step.id] || ""}
-                    onChange={(e) => {
-                      setCompletionInputs((prev) => ({
-                        ...prev,
-                        [step.id]: e.target.value,
-                      }));
-                    }}
-                    className="w-24"
-                  />
-                  <span className="text-sm text-muted-foreground">%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                // Set all to 0 if skipped
-                const defaultCompletion: Record<string, number> = {};
-                steps.forEach((step) => {
-                  defaultCompletion[step.id] = 0;
-                });
-                setStepCompletion(defaultCompletion);
-                setShowCompletionDialog(false);
-                sessionStorage.setItem(`completion-asked-${projectId}`, "true");
-              }}
-            >
-              Skip
-            </Button>
-            <Button onClick={handleCompletionSubmit}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Table className="hover:bg-none">
         <TableBody>
           <TableRow className="border-none">
@@ -226,148 +173,127 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
         </TableBody>
       </Table>
       {steps.length > 0 &&
-        steps.map((step, index) => (
-          <div
-            key={step.id}
-            className="flex my-2 items-center pb-3 border-b w-md gap-2"
-          >
-            <TypographyP className="py-2">
-              {index + 1}. {step.step}
-            </TypographyP>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" className="cursor-pointer">
-                <PencilIcon className="w-4 h-4" /> Edit
-              </Button>
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={() => deleteStep(step.id)}
-              >
-                <TrashIcon className="w-4 h-4" /> Delete
-              </Button>
+        steps.map((step, index) => {
+          if (!step || !step.id) {
+            console.warn("Invalid step data:", step);
+            return null;
+          }
+          return (
+            <div
+              key={step.id}
+              className="flex my-2 items-center pb-3 border-b w-md gap-2"
+            >
+              {editingStepId === step.id ? (
+                <Input
+                  value={editingStepName}
+                  onChange={(e) => setEditingStepName(e.target.value)}
+                  className="flex-1"
+                  placeholder="Enter step name"
+                  autoFocus
+                />
+              ) : (
+                <TypographyP className="py-2">
+                  {index + 1}. {step.step}
+                </TypographyP>
+              )}
+              <div className="flex items-center gap-2">
+                {editingStepId === step.id ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="cursor-pointer"
+                      onClick={() => handleUpdateStep(step.id)}
+                    >
+                      Done
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="cursor-pointer"
+                      onClick={handleCancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="cursor-pointer"
+                      onClick={() => {
+                        console.log("Edit button clicked for step:", step);
+                        handleEdit(step.id, step.step);
+                      }}
+                    >
+                      <PencilIcon className="w-4 h-4" /> Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="cursor-pointer"
+                      onClick={() => deleteStep(step.id)}
+                    >
+                      <TrashIcon className="w-4 h-4" /> Delete
+                    </Button>
+                  </>
+                )}
 
-              <Popover
-                open={editingStepId === step.id}
-                onOpenChange={(open) => {
-                  if (!open) {
-                    setEditingStepId(null);
-                  } else {
-                    setEditingStepId(step.id);
-                    setEditCompletionValue(
-                      String(stepCompletion[step.id] || 0)
-                    );
-                  }
-                }}
-              >
-                <PopoverTrigger asChild>
-                  <div className="relative cursor-pointer">
-                    <PieChart width={100} height={100}>
-                      <Pie
-                        data={[
-                          {
-                            name: "completed",
-                            value: stepCompletion[step.id] || 0,
-                          },
-                          {
-                            name: "remaining",
-                            value: 100 - (stepCompletion[step.id] || 0),
-                          },
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={50}
-                        innerRadius={30}
-                        startAngle={90}
-                        endAngle={-270}
-                        dataKey="value"
-                      >
-                        <Cell key="completed" fill="#8884d8" />
-                        <Cell key="remaining" fill="#e0e0e0" />
-                      </Pie>
-                      <Tooltip
-                        content={({ active }) => {
-                          if (active) {
-                            const completion = stepCompletion[step.id] || 0;
-                            return <p>{completion}%</p>;
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <span className="text-sm font-semibold">
-                        {stepCompletion[step.id] || 0}%
-                      </span>
-                    </div>
+                <div className="relative">
+                  <PieChart width={100} height={100}>
+                    <Pie
+                      data={[
+                        {
+                          name: "completed",
+                          value: stepCompletion[step.id] || 0,
+                        },
+                        {
+                          name: "remaining",
+                          value: 100 - (stepCompletion[step.id] || 0),
+                        },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={50}
+                      innerRadius={30}
+                      startAngle={90}
+                      endAngle={-270}
+                      dataKey="value"
+                    >
+                      <Cell key="completed" fill="#8884d8" />
+                      <Cell key="remaining" fill="#e0e0e0" />
+                    </Pie>
+                    <Tooltip
+                      content={({ active }) => {
+                        if (active) {
+                          const completion = stepCompletion[step.id] || 0;
+                          return <p>{completion}%</p>;
+                        }
+                        return null;
+                      }}
+                    />
+                  </PieChart>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-sm font-semibold">
+                      {stepCompletion[step.id] || 0}%
+                    </span>
                   </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-64">
-                  <div className="space-y-3">
-                    <Label htmlFor={`edit-completion-${step.id}`}>
-                      Completion Percentage
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id={`edit-completion-${step.id}`}
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={editCompletionValue}
-                        onChange={(e) => setEditCompletionValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            const percentage = Math.min(
-                              100,
-                              Math.max(0, parseInt(editCompletionValue) || 0)
-                            );
-                            setStepCompletion((prev) => ({
-                              ...prev,
-                              [step.id]: percentage,
-                            }));
-                            setEditingStepId(null);
-                          }
-                        }}
-                        className="w-24"
-                        autoFocus
-                      />
-                      <span className="text-sm text-muted-foreground">%</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          const percentage = Math.min(
-                            100,
-                            Math.max(0, parseInt(editCompletionValue) || 0)
-                          );
-                          setStepCompletion((prev) => ({
-                            ...prev,
-                            [step.id]: percentage,
-                          }));
-                          setEditingStepId(null);
-                        }}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingStepId(null)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <Checkbox
-                id={step.id}
-                checked={(stepCompletion[step.id] || 0) === 100}
-                disabled
-              />
+                </div>
+                <Checkbox
+                  id={step.id}
+                  checked={(stepCompletion[step.id] || 0) === 100}
+                  onCheckedChange={(checked) => {
+                    setStepCompletion((prev) => ({
+                      ...prev,
+                      [step.id]: checked === true ? 100 : 0,
+                    }));
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
     </>
   );
 }

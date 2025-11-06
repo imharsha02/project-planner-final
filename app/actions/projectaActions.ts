@@ -111,6 +111,33 @@ export async function getStepsAction(projectId: string) {
   return data;
 }
 
+export async function updateStepAction(formData: FormData) {
+  const stepId = formData.get("stepId") as string | null;
+  const stepName = formData.get("stepName") as string | null;
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to update a step.");
+  }
+  if (!stepId || !stepName) {
+    throw new Error("Step ID and step name are required.");
+  }
+  const { data, error } = await supabase
+    .from("custom_steps_table")
+    .update({ step: stepName })
+    .eq("id", stepId)
+    .select();
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to update step: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  }
+  return data;
+}
+
 export async function deleteStepAction(stepId: string) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -155,5 +182,6 @@ export async function deleteProjectAction(projectId: string) {
         "Unknown error. Check if you are logged in and registered."
       }`
     );
-  } return data;
+  }
+  return data;
 }
