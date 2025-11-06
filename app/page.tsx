@@ -51,25 +51,6 @@ const Page = () => {
           </TypographyP>
         </motion.div>
 
-        {!isAuthenticated && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="flex justify-center gap-3 sm:gap-4"
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                asChild
-                size="lg"
-                className="px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base md:text-lg w-full sm:w-auto"
-              >
-                <Link href="/Dashboard">Get Started</Link>
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-
         {isAuthenticated && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
