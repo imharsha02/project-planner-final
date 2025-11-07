@@ -185,3 +185,34 @@ export async function deleteProjectAction(projectId: string) {
   }
   return data;
 }
+
+export async function updateProjectTeamStatusAction(
+  projectId: string,
+  isGroupProject: boolean
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to update a project.");
+  }
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
+
+  const { data, error } = await supabase
+    .from("projects")
+    .update({ is_group_project: isGroupProject })
+    .eq("id", projectId)
+    .select();
+
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to update project: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  }
+
+  return data;
+}

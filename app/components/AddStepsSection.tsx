@@ -15,6 +15,8 @@ import {
   deleteStepAction,
   updateStepAction,
 } from "@/app/actions/projectaActions";
+
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -403,3 +405,26 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
     </div>
   );
 }
+
+// <div>
+//   {steps.length > 0 ? (
+//     <div className="flex space-x-4">
+//       <p>Is this a team project?</p>
+//       <RadioGroup defaultValue="comfortable" className="flex">
+//         {/* Yes */}
+//         <div className="flex items-center gap-3">
+//           <RadioGroupItem value="yes" id="yes" />
+//           <Label htmlFor="yes">yes</Label>
+//         </div>
+
+//         {/* No */}
+//         <div className="flex items-center gap-3">
+//           <RadioGroupItem value="no" id="no" />
+//           <Label htmlFor="r2">No</Label>
+//         </div>
+//       </RadioGroup>
+//     </div>
+//   ) : (
+//     <></>
+//   )}
+// </div>
