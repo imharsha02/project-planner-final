@@ -216,3 +216,44 @@ export async function updateProjectTeamStatusAction(
 
   return data;
 }
+
+export async function addTeamMembersAction(
+  projectId: string,
+  members: string[]
+) {
+  const session = await auth();
+
+  if (!projectId) {
+    throw new Error("Project ID is required to add team members.");
+  }
+
+  const trimmedMembers = members
+    .map((member) => member.trim())
+    .filter((member) => member.length > 0);
+
+  if (trimmedMembers.length === 0) {
+    throw new Error("Please provide at least one team member name.");
+  }
+
+  const rows = trimmedMembers.map((member) => ({
+    id: randomUUID(),
+    project_id: projectId,
+    member_name: member,
+  }));
+
+  const { data, error } = await supabase
+    .from("team_members")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to add team members: ${
+        error.message || "Unknown error. Please try again."
+      }`
+    );
+  }
+
+  return data;
+}

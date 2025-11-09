@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import AddStepsSection from "@/app/components/AddStepsSection";
 import { motion } from "motion/react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { updateProjectTeamStatusAction } from "@/app/actions/projectaActions";
+import {
+  addTeamMembersAction,
+  updateProjectTeamStatusAction,
+} from "@/app/actions/projectaActions";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -35,6 +39,7 @@ interface ProjectDetailContentProps {
   startDate?: string;
   endDate?: string;
   isGroupProject?: boolean | null;
+  initialTeamMembers?: string[];
 }
 
 const ProjectDetailContent = ({
@@ -45,6 +50,7 @@ const ProjectDetailContent = ({
   startDate,
   endDate,
   isGroupProject: initialIsGroupProject,
+  initialTeamMembers = [],
 }: ProjectDetailContentProps) => {
   const router = useRouter();
   const [isGroupProject, setIsGroupProject] = useState<boolean | null>(
@@ -55,6 +61,10 @@ const ProjectDetailContent = ({
   const isHandlingSelectionRef = useRef(false);
   const [noOfTeamMembers, setNoOfTeamMembers] = useState<number>(0);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
+  const [existingTeamMembers, setExistingTeamMembers] =
+    useState<string[]>(initialTeamMembers);
+  const [isAddingTeamMembers, setIsAddingTeamMembers] = useState(false);
+  const [teamMembersError, setTeamMembersError] = useState<string | null>(null);
 
   const handleTeamMemberCountChange = (value: string) => {
     const parsedValue = Number(value);
@@ -63,6 +73,7 @@ const ProjectDetailContent = ({
       : Math.floor(parsedValue);
     const clampedCount = Math.max(0, Math.min(10, sanitizedCount));
 
+    setTeamMembersError(null);
     setNoOfTeamMembers(clampedCount);
     setTeamMembers((prev) => {
       if (clampedCount > prev.length) {
@@ -81,9 +92,41 @@ const ProjectDetailContent = ({
   };
 
   const handleTeamMemberNameChange = (index: number, name: string) => {
+    setTeamMembersError(null);
     setTeamMembers((prev) =>
       prev.map((member, memberIndex) => (memberIndex === index ? name : member))
     );
+  };
+
+  const handleAddTeamMembers = async () => {
+    const trimmedMembers = teamMembers.map((member) => member.trim());
+    const hasEmptyMember =
+      trimmedMembers.length === 0 ||
+      trimmedMembers.some((member) => member.length === 0);
+
+    if (hasEmptyMember) {
+      setTeamMembersError("Please provide a name for each team member.");
+      return;
+    }
+
+    try {
+      setTeamMembersError(null);
+      setIsAddingTeamMembers(true);
+      await addTeamMembersAction(projectId, trimmedMembers);
+      setExistingTeamMembers((prev) => [...prev, ...trimmedMembers]);
+      setNoOfTeamMembers(0);
+      setTeamMembers([]);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to add team members:", error);
+      setTeamMembersError(
+        error instanceof Error
+          ? error.message
+          : "Failed to add team members. Please try again."
+      );
+    } finally {
+      setIsAddingTeamMembers(false);
+    }
   };
 
   useEffect(() => {
@@ -124,6 +167,10 @@ const ProjectDetailContent = ({
       : isGroupProject
       ? "default"
       : "secondary";
+
+  useEffect(() => {
+    setExistingTeamMembers(initialTeamMembers);
+  }, [initialTeamMembers]);
 
   return (
     <div className="min-h-screen bg-muted/20 py-10">
@@ -298,17 +345,42 @@ const ProjectDetailContent = ({
                         ))}
                       </div>
                     )}
+                    {teamMembersError && (
+                      <p className="text-sm font-medium text-destructive">
+                        {teamMembersError}
+                      </p>
+                    )}
                     <div className="flex justify-center">
                       <Button
-                        disabled={noOfTeamMembers === 0}
+                        disabled={noOfTeamMembers === 0 || isAddingTeamMembers}
                         variant="outline"
                         size="sm"
                         className="w-full sm:w-auto mx-auto"
+                        onClick={handleAddTeamMembers}
                       >
-                        Add people
+                        {isAddingTeamMembers ? "Adding..." : "Add people"}
                       </Button>
                     </div>
                   </div>
+
+                  {/* Team members list */}
+                  {existingTeamMembers.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold">Team members</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {existingTeamMembers.map((member, index) => (
+                          <Button
+                            key={`existing-team-member-${index}`}
+                            variant="secondary"
+                            size="sm"
+                            className="rounded-full"
+                          >
+                            {member}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
