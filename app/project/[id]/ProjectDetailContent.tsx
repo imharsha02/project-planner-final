@@ -24,6 +24,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { updateProjectTeamStatusAction } from "@/app/actions/projectaActions";
 import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface ProjectDetailContentProps {
   projectId: string;
@@ -51,6 +53,38 @@ const ProjectDetailContent = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const isHandlingSelectionRef = useRef(false);
+  const [noOfTeamMembers, setNoOfTeamMembers] = useState<number>(0);
+  const [teamMembers, setTeamMembers] = useState<string[]>([]);
+
+  const handleTeamMemberCountChange = (value: string) => {
+    const parsedValue = Number(value);
+    const sanitizedCount = Number.isNaN(parsedValue)
+      ? 0
+      : Math.floor(parsedValue);
+    const clampedCount = Math.max(0, Math.min(10, sanitizedCount));
+
+    setNoOfTeamMembers(clampedCount);
+    setTeamMembers((prev) => {
+      if (clampedCount > prev.length) {
+        return [
+          ...prev,
+          ...Array.from({ length: clampedCount - prev.length }, () => ""),
+        ];
+      }
+
+      if (clampedCount < prev.length) {
+        return prev.slice(0, clampedCount);
+      }
+
+      return prev;
+    });
+  };
+
+  const handleTeamMemberNameChange = (index: number, name: string) => {
+    setTeamMembers((prev) =>
+      prev.map((member, memberIndex) => (memberIndex === index ? name : member))
+    );
+  };
 
   useEffect(() => {
     if (initialIsGroupProject === null || initialIsGroupProject === undefined) {
@@ -93,7 +127,7 @@ const ProjectDetailContent = ({
 
   return (
     <div className="min-h-screen bg-muted/20 py-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-col space-y-10 px-4 sm:px-6 lg:px-8">
         <AlertDialog
           open={dialogOpen}
           onOpenChange={(open) => {
@@ -208,20 +242,91 @@ const ProjectDetailContent = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="shadow-lg border-border/60">
-            <CardHeader className="pb-0">
-              <CardTitle className="text-xl font-semibold">
-                Build your project plan
-              </CardTitle>
-              <CardDescription>
-                Break the work down into actionable steps and track progress as
-                you go.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-2 pb-6 pt-2 sm:px-4">
-              <AddStepsSection projectId={projectId} />
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            {isGroupProject && (
+              <Card className="shadow-lg border-border/60">
+                <CardHeader className="pb-0">
+                  <CardTitle>Team members</CardTitle>
+                  <CardDescription>
+                    Add team members to your project.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="px-2 pb-6 pt-2 sm:px-4">
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                      <Label htmlFor="team-member-count">
+                        No. of Team Members
+                      </Label>
+                      <Input
+                        id="team-member-count"
+                        type="number"
+                        min={0}
+                        max={10}
+                        className="w-max"
+                        value={noOfTeamMembers}
+                        onChange={(e) =>
+                          handleTeamMemberCountChange(e.target.value)
+                        }
+                      />
+                    </div>
+                    {teamMembers.length > 0 && (
+                      <div className="space-y-3">
+                        {teamMembers.map((member, index) => (
+                          <div
+                            key={`team-member-${index}`}
+                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
+                          >
+                            <Label
+                              htmlFor={`team-member-${index}`}
+                              className="sm:w-40"
+                            >
+                              Team Member {index + 1}
+                            </Label>
+                            <Input
+                              id={`team-member-${index}`}
+                              value={member}
+                              placeholder="Enter name"
+                              onChange={(e) =>
+                                handleTeamMemberNameChange(
+                                  index,
+                                  e.target.value
+                                )
+                              }
+                              className="sm:flex-1"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex justify-center">
+                      <Button
+                        disabled={noOfTeamMembers === 0}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto mx-auto"
+                      >
+                        Add people
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            <Card className="shadow-lg border-border/60">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-xl font-semibold">
+                  Build your project plan
+                </CardTitle>
+                <CardDescription>
+                  Break the work down into actionable steps and track progress
+                  as you go.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2 pb-6 pt-2 sm:px-4">
+                <AddStepsSection projectId={projectId} />
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
       </div>
     </div>
