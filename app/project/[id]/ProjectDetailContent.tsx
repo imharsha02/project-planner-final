@@ -31,6 +31,8 @@ import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
+type TeamMember = { id: string; member_name: string };
+
 interface ProjectDetailContentProps {
   projectId: string;
   projectName?: string;
@@ -39,7 +41,7 @@ interface ProjectDetailContentProps {
   startDate?: string;
   endDate?: string;
   isGroupProject?: boolean | null;
-  initialTeamMembers?: string[];
+  initialTeamMembers?: TeamMember[];
 }
 
 const ProjectDetailContent = ({
@@ -62,7 +64,7 @@ const ProjectDetailContent = ({
   const [noOfTeamMembers, setNoOfTeamMembers] = useState<number>(0);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [existingTeamMembers, setExistingTeamMembers] =
-    useState<string[]>(initialTeamMembers);
+    useState<TeamMember[]>(initialTeamMembers);
   const [isAddingTeamMembers, setIsAddingTeamMembers] = useState(false);
   const [teamMembersError, setTeamMembersError] = useState<string | null>(null);
 
@@ -112,8 +114,19 @@ const ProjectDetailContent = ({
     try {
       setTeamMembersError(null);
       setIsAddingTeamMembers(true);
-      await addTeamMembersAction(projectId, trimmedMembers);
-      setExistingTeamMembers((prev) => [...prev, ...trimmedMembers]);
+      const newMembers = await addTeamMembersAction(projectId, trimmedMembers);
+      if (newMembers) {
+        const sanitizedMembers: TeamMember[] = newMembers
+          .filter(
+            (member): member is { id: string; member_name: string } =>
+              Boolean(member?.id) && Boolean(member?.member_name)
+          )
+          .map((member) => ({
+            id: member.id,
+            member_name: member.member_name,
+          }));
+        setExistingTeamMembers((prev) => [...prev, ...sanitizedMembers]);
+      }
       setNoOfTeamMembers(0);
       setTeamMembers([]);
       router.refresh();
@@ -169,7 +182,7 @@ const ProjectDetailContent = ({
       : "secondary";
 
   useEffect(() => {
-    setExistingTeamMembers(initialTeamMembers);
+    setExistingTeamMembers([...initialTeamMembers]);
   }, [initialTeamMembers]);
 
   return (
@@ -368,14 +381,14 @@ const ProjectDetailContent = ({
                     <div className="space-y-3">
                       <h3 className="text-lg font-semibold">Team members</h3>
                       <div className="flex flex-wrap gap-2">
-                        {existingTeamMembers.map((member, index) => (
+                        {existingTeamMembers.map((member) => (
                           <Button
-                            key={`existing-team-member-${index}`}
+                            key={member.id}
                             variant="secondary"
                             size="sm"
                             className="rounded-full"
                           >
-                            {member}
+                            {member.member_name}
                           </Button>
                         ))}
                       </div>
@@ -395,7 +408,10 @@ const ProjectDetailContent = ({
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-2 pb-6 pt-2 sm:px-4">
-                <AddStepsSection projectId={projectId} />
+                <AddStepsSection
+                  projectId={projectId}
+                  teamMembers={existingTeamMembers}
+                />
               </CardContent>
             </Card>
           </div>

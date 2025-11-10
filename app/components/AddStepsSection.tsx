@@ -14,14 +14,48 @@ import {
   getStepsAction,
   deleteStepAction,
   updateStepAction,
+  updateStepAssignmentAction,
 } from "@/app/actions/projectaActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "motion/react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function AddStepsSection({ projectId }: { projectId: string }) {
+type TeamMember = { id: string; member_name: string };
+type StepWithAssignment = {
+  id: string;
+  step: string;
+  assigned_member_id: string | null;
+};
+
+const parseSteps = (
+  data: Array<any> | null | undefined
+): StepWithAssignment[] =>
+  (data ?? []).map((step) => ({
+    id: step.id,
+    step: step.step,
+    assigned_member_id:
+      typeof step.assigned_member_id === "string" &&
+      step.assigned_member_id.length > 0
+        ? step.assigned_member_id
+        : null,
+  }));
+
+export default function AddStepsSection({
+  projectId,
+  teamMembers = [],
+}: {
+  projectId: string;
+  teamMembers?: TeamMember[];
+}) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [stepName, setStepName] = useState("");
-  const [steps, setSteps] = useState<Array<{ id: string; step: string }>>([]);
+  const [steps, setSteps] = useState<StepWithAssignment[]>([]);
   const [stepCompletion, setStepCompletion] = useState<Record<string, number>>(
     {}
   );
@@ -39,7 +73,7 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
       try {
         const data = await getStepsAction(projectId);
         console.log("Fetched steps data:", data);
-        setSteps(data || []);
+        setSteps(parseSteps(data));
       } catch (error) {
         console.error("Error fetching steps:", error);
       }
@@ -50,7 +84,7 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
     try {
       await deleteStepAction(stepId);
       const allSteps = await getStepsAction(projectId);
-      setSteps(allSteps || []);
+      setSteps(parseSteps(allSteps));
     } catch (error) {
       console.error("Error deleting step:", error);
     }
@@ -89,6 +123,27 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
       console.error("Error updating step:", error);
       alert(
         `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  };
+
+  const handleAssignmentChange = async (
+    stepId: string,
+    memberId: string | null
+  ) => {
+    try {
+      await updateStepAssignmentAction(stepId, memberId);
+      setSteps((prevSteps) =>
+        prevSteps.map((step) =>
+          step.id === stepId ? { ...step, assigned_member_id: memberId } : step
+        )
+      );
+    } catch (error) {
+      console.error("Error updating assignment:", error);
+      alert(
+        `Failed to update assignment: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   };
@@ -138,7 +193,7 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                               await createStepAction(formData);
                               // Fetch all steps again after adding a new one
                               const allSteps = await getStepsAction(projectId);
-                              setSteps(allSteps || []);
+                              setSteps(parseSteps(allSteps));
                               setStepName("");
                             } catch (error) {
                               console.error("Error creating step:", error);
@@ -257,6 +312,33 @@ export default function AddStepsSection({ projectId }: { projectId: string }) {
                     </motion.div>
                   )}
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 w-full sm:w-auto sm:min-w-[220px]">
+                      <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Assigned to
+                      </Label>
+                      <Select
+                        value={step.assigned_member_id ?? "unassigned"}
+                        onValueChange={(value) =>
+                          handleAssignmentChange(
+                            step.id,
+                            value === "unassigned" ? null : value
+                          )
+                        }
+                        disabled={teamMembers.length === 0}
+                      >
+                        <SelectTrigger className="w-full sm:w-44">
+                          <SelectValue placeholder="Assign member" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {teamMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.member_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {editingStepId === step.id ? (
                       <>
                         <motion.div

@@ -10,12 +10,14 @@ const Page = async ({ params }: { params: { id: string } }) => {
   const supabase = createServerSupabaseServiceClient();
   const { data: teamMembersData } = await supabase
     .from("team_members")
-    .select("member_name")
+    .select("id, member_name")
     .eq("project_id", id);
   const initialTeamMembers =
-    teamMembersData
-      ?.map((member) => member.member_name)
-      .filter((member): member is string => Boolean(member)) ?? [];
+    teamMembersData?.flatMap((member) =>
+      member?.id && member?.member_name
+        ? [{ id: member.id, member_name: member.member_name }]
+        : []
+    ) ?? [];
 
   return (
     <ProjectDetailContent

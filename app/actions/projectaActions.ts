@@ -220,8 +220,12 @@ export async function updateProjectTeamStatusAction(
 export async function addTeamMembersAction(
   projectId: string,
   members: string[]
-) {
+): Promise<Array<{ id: string; member_name: string | null }>> {
   const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    throw new Error("You must be logged in to add team members.");
+  }
 
   if (!projectId) {
     throw new Error("Project ID is required to add team members.");
@@ -239,6 +243,7 @@ export async function addTeamMembersAction(
     id: randomUUID(),
     project_id: projectId,
     member_name: member,
+    user_id: userId,
   }));
 
   const { data, error } = await supabase
@@ -250,6 +255,37 @@ export async function addTeamMembersAction(
     console.error("Supabase Error:", error);
     throw new Error(
       `Failed to add team members: ${
+        error.message || "Unknown error. Please try again."
+      }`
+    );
+  }
+
+  return data ?? [];
+}
+
+export async function updateStepAssignmentAction(
+  stepId: string,
+  memberId: string | null
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to update assignments.");
+  }
+
+  if (!stepId) {
+    throw new Error("Step ID is required to update assignments.");
+  }
+
+  const { data, error } = await supabase
+    .from("custom_steps_table")
+    .update({ assigned_member_id: memberId })
+    .eq("id", stepId)
+    .select();
+
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to update assignment: ${
         error.message || "Unknown error. Please try again."
       }`
     );
