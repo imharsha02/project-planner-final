@@ -31,7 +31,7 @@ import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-type TeamMember = { id: string; member_name: string };
+type TeamMember = { id: string; member_name: string; user_id?: string | null };
 
 interface ProjectDetailContentProps {
   projectId: string;
@@ -62,7 +62,7 @@ const ProjectDetailContent = ({
   const [isSaving, setIsSaving] = useState(false);
   const isHandlingSelectionRef = useRef(false);
   const [noOfTeamMembers, setNoOfTeamMembers] = useState<number>(0);
-  const [teamMembers, setTeamMembers] = useState<string[]>([]);
+  const [teamMemberEmails, setTeamMemberEmails] = useState<string[]>([]);
   const [existingTeamMembers, setExistingTeamMembers] =
     useState<TeamMember[]>(initialTeamMembers);
   const [isAddingTeamMembers, setIsAddingTeamMembers] = useState(false);
@@ -77,7 +77,7 @@ const ProjectDetailContent = ({
 
     setTeamMembersError(null);
     setNoOfTeamMembers(clampedCount);
-    setTeamMembers((prev) => {
+    setTeamMemberEmails((prev) => {
       if (clampedCount > prev.length) {
         return [
           ...prev,
@@ -93,42 +93,69 @@ const ProjectDetailContent = ({
     });
   };
 
-  const handleTeamMemberNameChange = (index: number, name: string) => {
+  const handleTeamMemberEmailChange = (index: number, email: string) => {
     setTeamMembersError(null);
-    setTeamMembers((prev) =>
-      prev.map((member, memberIndex) => (memberIndex === index ? name : member))
+    setTeamMemberEmails((prev) =>
+      prev.map((member, memberIndex) =>
+        memberIndex === index ? email : member
+      )
     );
   };
 
   const handleAddTeamMembers = async () => {
-    const trimmedMembers = teamMembers.map((member) => member.trim());
-    const hasEmptyMember =
-      trimmedMembers.length === 0 ||
-      trimmedMembers.some((member) => member.length === 0);
+    const normalizedEmails = teamMemberEmails
+      .map((email) => email.trim().toLowerCase())
+      .filter((email) => email.length > 0);
 
-    if (hasEmptyMember) {
-      setTeamMembersError("Please provide a name for each team member.");
+    if (normalizedEmails.length === 0) {
+      setTeamMembersError("Please provide at least one team member email.");
+      return;
+    }
+
+    const invalidEmails = normalizedEmails.filter(
+      (email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    );
+
+    if (invalidEmails.length > 0) {
+      setTeamMembersError(
+        `Invalid email address${
+          invalidEmails.length > 1 ? "es" : ""
+        }: ${invalidEmails.join(", ")}`
+      );
       return;
     }
 
     try {
       setTeamMembersError(null);
       setIsAddingTeamMembers(true);
-      const newMembers = await addTeamMembersAction(projectId, trimmedMembers);
-      if (newMembers) {
+      const newMembers = await addTeamMembersAction(
+        projectId,
+        normalizedEmails
+      );
+      if (newMembers && newMembers.length > 0) {
         const sanitizedMembers: TeamMember[] = newMembers
           .filter(
-            (member): member is { id: string; member_name: string } =>
-              Boolean(member?.id) && Boolean(member?.member_name)
+            (
+              member
+            ): member is {
+              id: string;
+              member_name: string | null;
+              user_id: string | null;
+            } => Boolean(member?.id)
           )
           .map((member) => ({
             id: member.id,
-            member_name: member.member_name,
+            member_name: member.member_name ?? "Unnamed member",
+            user_id: member.user_id ?? null,
           }));
-        setExistingTeamMembers((prev) => [...prev, ...sanitizedMembers]);
+
+        if (sanitizedMembers.length > 0) {
+          setExistingTeamMembers((prev) => [...prev, ...sanitizedMembers]);
+        }
       }
+
       setNoOfTeamMembers(0);
-      setTeamMembers([]);
+      setTeamMemberEmails([]);
       router.refresh();
     } catch (error) {
       console.error("Failed to add team members:", error);
@@ -329,9 +356,9 @@ const ProjectDetailContent = ({
                         }
                       />
                     </div>
-                    {teamMembers.length > 0 && (
+                    {teamMemberEmails.length > 0 && (
                       <div className="space-y-3">
-                        {teamMembers.map((member, index) => (
+                        {teamMemberEmails.map((member, index) => (
                           <div
                             key={`team-member-${index}`}
                             className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
@@ -340,14 +367,14 @@ const ProjectDetailContent = ({
                               htmlFor={`team-member-${index}`}
                               className="sm:w-40"
                             >
-                              Team Member {index + 1}
+                              Team member email {index + 1}
                             </Label>
                             <Input
                               id={`team-member-${index}`}
                               value={member}
-                              placeholder="Enter name"
+                              placeholder="Enter email"
                               onChange={(e) =>
-                                handleTeamMemberNameChange(
+                                handleTeamMemberEmailChange(
                                   index,
                                   e.target.value
                                 )
@@ -371,7 +398,7 @@ const ProjectDetailContent = ({
                         className="w-full sm:w-auto mx-auto"
                         onClick={handleAddTeamMembers}
                       >
-                        {isAddingTeamMembers ? "Adding..." : "Add people"}
+                        {isAddingTeamMembers ? "Adding..." : "Add team members"}
                       </Button>
                     </div>
                   </div>
