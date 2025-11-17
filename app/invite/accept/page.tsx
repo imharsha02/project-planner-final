@@ -1,7 +1,10 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/app/auth";
-import { getInvitationAction, acceptInvitationAction } from "@/app/actions/invitationActions";
+import {
+  getInvitationAction,
+  acceptInvitationAction,
+} from "@/app/actions/invitationActions";
 import InviteAcceptContent from "./InviteAcceptContent";
 
 interface InviteAcceptPageProps {
@@ -22,7 +25,7 @@ export default async function InviteAcceptPage({
   // Get invitation details
   const invitationResult = await getInvitationAction(token);
 
-  if (!invitationResult.success) {
+  if (!invitationResult.success || !invitationResult.invitation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/20">
         <div className="max-w-md w-full mx-4">
@@ -52,4 +55,3 @@ export default async function InviteAcceptPage({
     </Suspense>
   );
 }
-
