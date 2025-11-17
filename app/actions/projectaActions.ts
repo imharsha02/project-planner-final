@@ -219,11 +219,18 @@ export async function updateProjectTeamStatusAction(
 
 export async function addTeamMembersAction(
   projectId: string,
-  members: string[]
-): Promise<Array<{ id: string; member_name: string | null }>> {
+  emails: string[]
+): Promise<{
+  addedMembers: Array<{
+    id: string;
+    member_email: string | null;
+    user_id: string | null;
+  }>;
+  invitationsSent: number;
+}> {
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
+  const inviterUserId = session?.user?.id;
+  if (!inviterUserId) {
     throw new Error("You must be logged in to add team members.");
   }
 
@@ -231,36 +238,167 @@ export async function addTeamMembersAction(
     throw new Error("Project ID is required to add team members.");
   }
 
-  const trimmedMembers = members
-    .map((member) => member.trim())
-    .filter((member) => member.length > 0);
+  // Get inviter's name and project name
+  const { data: inviterData } = await supabase
+    .from("users")
+    .select("username")
+    .eq("id", inviterUserId)
+    .single();
 
-  if (trimmedMembers.length === 0) {
-    throw new Error("Please provide at least one team member name.");
+  const { data: projectData } = await supabase
+    .from("projects")
+    .select("project_name")
+    .eq("id", projectId)
+    .single();
+
+  const inviterName = inviterData?.username || "A team member";
+  const projectName = projectData?.project_name || "the project";
+
+  // Normalize emails
+  const normalizedEmails = emails
+    .map((email) => email.trim().toLowerCase())
+    .filter((email) => email.length > 0);
+
+  if (normalizedEmails.length === 0) {
+    throw new Error("Please provide at least one team member email.");
   }
 
-  const rows = trimmedMembers.map((member) => ({
-    id: randomUUID(),
-    project_id: projectId,
-    member_name: member,
-    user_id: userId,
-  }));
+  // Check which emails exist in users table
+  const { data: existingUsers, error: usersError } = await supabase
+    .from("users")
+    .select("id, user_email, username")
+    .in("user_email", normalizedEmails);
 
-  const { data, error } = await supabase
-    .from("team_members")
-    .insert(rows)
-    .select();
+  if (usersError) {
+    console.error("Error checking existing users:", usersError);
+    throw new Error("Failed to check existing users.");
+  }
 
-  if (error) {
-    console.error("Supabase Error:", error);
-    throw new Error(
-      `Failed to add team members: ${
-        error.message || "Unknown error. Please try again."
-      }`
+  // Normalize existing user emails for comparison
+  const existingEmails = new Set(
+    (existingUsers || []).map((user) => user.user_email.toLowerCase())
+  );
+  const newEmails = normalizedEmails.filter(
+    (email) => !existingEmails.has(email)
+  );
+
+  // Debug logging
+  console.log("Normalized emails:", normalizedEmails);
+  console.log("Existing users found:", existingUsers?.length || 0);
+  console.log("New emails to invite:", newEmails.length);
+
+  // Add existing users to team_members
+  const addedMembers: Array<{
+    id: string;
+    member_email: string | null;
+    user_id: string | null;
+  }> = [];
+
+  if (existingUsers && existingUsers.length > 0) {
+    // Check which users are already team members to avoid duplicates
+    const existingUserIds = existingUsers.map((user) => user.id);
+    const { data: existingTeamMembers } = await supabase
+      .from("team_members")
+      .select("user_id, member_email")
+      .eq("project_id", projectId)
+      .in("user_id", existingUserIds);
+
+    const existingMemberUserIds = new Set(
+      existingTeamMembers?.map((tm) => tm.user_id) || []
     );
+
+    // Filter out users who are already team members
+    const usersToAdd = existingUsers.filter(
+      (user) => !existingMemberUserIds.has(user.id)
+    );
+
+    if (usersToAdd.length > 0) {
+      const teamMemberRows = usersToAdd.map((user) => ({
+        id: randomUUID(),
+        project_id: projectId,
+        member_email: user.user_email,
+        user_id: user.id,
+      }));
+
+      const { data: insertedMembers, error: insertError } = await supabase
+        .from("team_members")
+        .insert(teamMemberRows)
+        .select("id, member_email, user_id");
+
+      if (insertError) {
+        console.error("Error adding existing team members:", insertError);
+        console.error(
+          "Insert error details:",
+          JSON.stringify(insertError, null, 2)
+        );
+        throw new Error(
+          `Failed to add existing team members: ${insertError.message || "Unknown error"}`
+        );
+      }
+
+      if (insertedMembers) {
+        addedMembers.push(...insertedMembers);
+      }
+    }
   }
 
-  return data ?? [];
+  // Create invitations for new emails
+  let invitationsSent = 0;
+  if (newEmails.length > 0) {
+    const invitationRows = newEmails.map((email) => {
+      const inviteToken = randomUUID();
+      return {
+        id: randomUUID(),
+        project_id: projectId,
+        email: email,
+        token: inviteToken,
+        invited_by: inviterUserId,
+        expires_at: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ).toISOString(), // 7 days from now
+        status: "pending",
+      };
+    });
+
+    const { error: invitationError } = await supabase
+      .from("project_invitations")
+      .insert(invitationRows);
+
+    if (invitationError) {
+      console.error("Error creating invitations:", invitationError);
+      throw new Error(
+        `Failed to create invitations: ${invitationError.message || "Unknown error"}`
+      );
+    } else {
+      // Send invitation emails
+      const { sendInvitationEmail } = await import(
+        "@/lib/emails/sendInvitationEmail"
+      );
+      for (const email of newEmails) {
+        try {
+          const invitation = invitationRows.find((inv) => inv.email === email);
+          if (invitation) {
+            await sendInvitationEmail({
+              to: email,
+              projectName,
+              inviterName,
+              inviteToken: invitation.token,
+              projectId,
+            });
+            invitationsSent++;
+          }
+        } catch (error) {
+          console.error(`Failed to send invitation to ${email}:`, error);
+          // Continue with other emails even if one fails
+        }
+      }
+    }
+  }
+
+  return {
+    addedMembers,
+    invitationsSent,
+  };
 }
 
 export async function updateStepAssignmentAction(

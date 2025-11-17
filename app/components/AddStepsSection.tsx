@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type TeamMember = { id: string; member_name: string };
+type TeamMember = { id: string; member_email: string };
 type StepWithAssignment = {
   id: string;
   step: string;
@@ -333,7 +333,7 @@ export default function AddStepsSection({
                           <SelectItem value="unassigned">Unassigned</SelectItem>
                           {teamMembers.map((member) => (
                             <SelectItem key={member.id} value={member.id}>
-                              {member.member_name}
+                              {member.member_email}
                             </SelectItem>
                           ))}
                         </SelectContent>
