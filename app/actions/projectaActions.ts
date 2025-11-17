@@ -360,37 +360,80 @@ export async function addTeamMembersAction(
       };
     });
 
-    const { error: invitationError } = await supabase
-      .from("project_invitations")
-      .insert(invitationRows);
+    // First, try to send emails before creating invitation records
+    // This ensures we don't create orphaned invitations if email sending fails
+    console.log(
+      `Attempting to send ${newEmails.length} invitation email(s)...`
+    );
+    const { sendInvitationEmail } = await import(
+      "@/lib/emails/sendInvitationEmail"
+    );
 
-    if (invitationError) {
-      console.error("Error creating invitations:", invitationError);
-      throw new Error(
-        `Failed to create invitations: ${invitationError.message || "Unknown error"}`
-      );
-    } else {
-      // Send invitation emails
-      const { sendInvitationEmail } = await import(
-        "@/lib/emails/sendInvitationEmail"
-      );
-      for (const email of newEmails) {
-        try {
-          const invitation = invitationRows.find((inv) => inv.email === email);
-          if (invitation) {
-            await sendInvitationEmail({
-              to: email,
-              projectName,
-              inviterName,
-              inviteToken: invitation.token,
-              projectId,
-            });
-            invitationsSent++;
-          }
-        } catch (error) {
-          console.error(`Failed to send invitation to ${email}:`, error);
-          // Continue with other emails even if one fails
+    const emailErrors: Array<{ email: string; error: string }> = [];
+
+    for (const email of newEmails) {
+      try {
+        const invitation = invitationRows.find((inv) => inv.email === email);
+        if (invitation) {
+          console.log(`Sending invitation email to: ${email}`);
+          await sendInvitationEmail({
+            to: email,
+            projectName,
+            inviterName,
+            inviteToken: invitation.token,
+            projectId,
+          });
+          console.log(`Successfully sent invitation email to: ${email}`);
+          invitationsSent++;
+        } else {
+          const errorMsg = `Invitation not found for email: ${email}`;
+          console.error(errorMsg);
+          emailErrors.push({ email, error: errorMsg });
         }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to send invitation to ${email}:`, error);
+        emailErrors.push({ email, error: errorMsg });
+      }
+    }
+
+    // If no emails were sent successfully, throw an error
+    if (invitationsSent === 0 && newEmails.length > 0) {
+      const errorMessages = emailErrors
+        .map((e) => `${e.email}: ${e.error}`)
+        .join("; ");
+      throw new Error(
+        `Failed to send any invitation emails. Errors: ${errorMessages}`
+      );
+    }
+
+    // Only create invitation records if at least one email was sent successfully
+    if (invitationsSent > 0) {
+      // Filter to only include invitations for emails that were successfully sent
+      const successfulEmails = newEmails.filter((email) => {
+        return !emailErrors.some((e) => e.email === email);
+      });
+      const successfulInvitations = invitationRows.filter((inv) =>
+        successfulEmails.includes(inv.email)
+      );
+
+      const { error: invitationError } = await supabase
+        .from("project_invitations")
+        .insert(successfulInvitations);
+
+      if (invitationError) {
+        console.error("Error creating invitations:", invitationError);
+        throw new Error(
+          `Failed to create invitations: ${invitationError.message || "Unknown error"}`
+        );
+      }
+
+      // If some emails failed, log warnings but don't fail the entire operation
+      if (emailErrors.length > 0) {
+        console.warn(
+          `Successfully sent ${invitationsSent} invitation(s), but ${emailErrors.length} failed:`,
+          emailErrors
+        );
       }
     }
   }

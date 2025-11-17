@@ -1,10 +1,8 @@
 "use server";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
-import { auth } from "@/app/auth";
 import { randomUUID } from "crypto";
 
 const supabase = createServerSupabaseServiceClient();
-
 /**
  * Accept an invitation by token
  * This should be called after the user has authenticated

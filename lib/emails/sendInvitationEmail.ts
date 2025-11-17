@@ -41,7 +41,7 @@ export async function sendInvitationEmail({
     "http://localhost:3000";
   const inviteUrl = `${baseUrl}/invite/accept?token=${inviteToken}&project=${projectId}`;
 
-  const emailHtml = render(
+  const emailHtml = await render(
     ProjectInvitationEmail({
       projectName,
       inviterName,
@@ -50,7 +50,7 @@ export async function sendInvitationEmail({
     })
   );
 
-  const emailText = render(
+  const emailText = await render(
     ProjectInvitationEmail({
       projectName,
       inviterName,

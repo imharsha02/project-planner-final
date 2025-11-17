@@ -12,66 +12,52 @@ import {
 } from "@react-email/components";
 
 interface ProjectInvitationEmailProps {
-  projectName?: string;
-  inviterName?: string;
-  inviteUrl?: string;
-  recipientEmail?: string;
+  projectName: string;
+  inviterName: string;
+  inviteUrl: string;
+  recipientEmail: string;
 }
 
-export const ProjectInvitationEmail = ({
-  projectName = "Project",
-  inviterName = "Team member",
-  inviteUrl = "#",
-  recipientEmail = "user@example.com",
-}: ProjectInvitationEmailProps) => {
-  const previewText = `${inviterName} has invited you to join ${projectName}`;
+export default function ProjectInvitationEmail({
+  projectName,
+  inviterName,
+  inviteUrl,
+  recipientEmail,
+}: ProjectInvitationEmailProps) {
+  const previewText = `You've been invited to join ${projectName}`;
 
   return (
     <Html>
       <Head />
       <Preview>{previewText}</Preview>
       <Tailwind>
-        <Body className="bg-gray-100 font-sans">
-          <Container className="bg-white border border-gray-200 rounded-lg my-10 mx-auto p-8 max-w-[465px]">
-            <Heading className="text-2xl font-normal text-center p-0 my-8 mx-0 text-gray-900">
-              You&apos;ve been invited to join <strong>{projectName}</strong>
+        <Body className="mx-auto my-auto bg-white px-2 font-sans">
+          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
+            <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
+              You&apos;ve been invited!
             </Heading>
-
-            <Text className="text-sm text-gray-600">Hello,</Text>
-
-            <Text className="text-sm text-gray-600 leading-relaxed">
-              <strong>{inviterName}</strong> has invited you to collaborate on
-              the project <strong>{projectName}</strong>.
+            <Text className="text-[14px] text-black leading-[24px]">
+              Hello,
             </Text>
-
-            <Text className="text-sm text-gray-600 leading-relaxed">
-              Click the button below to accept the invitation and join the team.
-              You&apos;ll be able to access the project and start collaborating
-              right away.
+            <Text className="text-[14px] text-black leading-[24px]">
+              <strong>{inviterName}</strong> has invited you to join the project{" "}
+              <strong>{projectName}</strong> on Project Planner.
             </Text>
-
-            <Section className="text-center mt-8 mb-8">
+            <Section className="my-[32px] text-center">
               <Button
-                className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-md no-underline text-center inline-block"
+                className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
                 href={inviteUrl}
               >
                 Accept Invitation
               </Button>
             </Section>
-
-            <Text className="text-xs text-gray-500 mt-8">
+            <Text className="text-[12px] leading-[24px] text-[#666666]">
               If you didn&apos;t expect this invitation, you can safely ignore
               this email.
-            </Text>
-
-            <Text className="text-xs text-gray-500 mt-4">
-              This invitation link will expire in 7 days.
             </Text>
           </Container>
         </Body>
       </Tailwind>
     </Html>
   );
-};
-
-export default ProjectInvitationEmail;
+}
