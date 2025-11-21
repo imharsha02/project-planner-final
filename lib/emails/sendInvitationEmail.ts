@@ -1,6 +1,7 @@
 import { render } from "@react-email/render";
 import { Resend } from "resend";
 import ProjectInvitationEmail from "@/app/emails/ProjectInvitationEmail";
+import React from "react";
 
 let resendClient: Resend | null = null;
 function getResendClient(): Resend {
@@ -42,7 +43,7 @@ export async function sendInvitationEmail({
   const inviteUrl = `${baseUrl}/invite/accept?token=${inviteToken}&project=${projectId}`;
 
   const emailHtml = await render(
-    ProjectInvitationEmail({
+    React.createElement(ProjectInvitationEmail, {
       projectName,
       inviterName,
       inviteUrl,
@@ -51,7 +52,7 @@ export async function sendInvitationEmail({
   );
 
   const emailText = await render(
-    ProjectInvitationEmail({
+    React.createElement(ProjectInvitationEmail, {
       projectName,
       inviterName,
       inviteUrl,

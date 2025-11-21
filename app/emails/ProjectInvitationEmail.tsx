@@ -22,7 +22,6 @@ export default function ProjectInvitationEmail({
   projectName,
   inviterName,
   inviteUrl,
-  recipientEmail,
 }: ProjectInvitationEmailProps) {
   const previewText = `You've been invited to join ${projectName}`;
 
