@@ -367,16 +367,6 @@ export async function addTeamMembersAction(
         `Attempting to send ${newEmails.length} invitation email(s)...`
       );
 
-      // Use static import instead of dynamic import for better production compatibility
-      const { sendInvitationEmail } = await import(
-        "@/lib/emails/sendInvitationEmail"
-      ).catch((error) => {
-        console.error("Failed to import sendInvitationEmail:", error);
-        throw new Error(
-          "Email service is not available. Please check your configuration."
-        );
-      });
-
       const emailErrors: Array<{ email: string; error: string }> = [];
 
       for (const email of newEmails) {
@@ -384,13 +374,40 @@ export async function addTeamMembersAction(
           const invitation = invitationRows.find((inv) => inv.email === email);
           if (invitation) {
             console.log(`Sending invitation email to: ${email}`);
-            await sendInvitationEmail({
-              to: email,
-              projectName,
-              inviterName,
-              inviteToken: invitation.token,
-              projectId,
+
+            // Call API route instead of direct email rendering to avoid Server Components issues
+            // For server-side calls, we can use the internal URL or relative path
+            const apiUrl =
+              process.env.NEXTAUTH_URL ||
+              process.env.NEXT_PUBLIC_APP_URL ||
+              "http://localhost:3000";
+
+            const url = apiUrl.startsWith("http")
+              ? `${apiUrl}/api/send-invitation`
+              : `http://localhost:3000/api/send-invitation`;
+
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                to: email,
+                projectName,
+                inviterName,
+                inviteToken: invitation.token,
+                projectId,
+              }),
             });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(
+                errorData.error ||
+                  `Failed to send email: ${response.statusText}`
+              );
+            }
+
             console.log(`Successfully sent invitation email to: ${email}`);
             invitationsSent++;
           } else {
