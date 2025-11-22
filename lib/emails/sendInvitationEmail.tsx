@@ -75,36 +75,28 @@ export async function sendInvitationEmail({
     );
   }
 
-    try {
-      const resend = getResendClient();
-      const { data, error } = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
-        to: [to],
-        subject: `Invitation to join ${projectName}`,
-        html: emailHtml,
-        text: emailText,
-      });
+  try {
+    const resend = getResendClient();
+    const { data, error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+      to: [to],
+      subject: `Invitation to join ${projectName}`,
+      html: emailHtml,
+      text: emailText,
+    });
 
-      if (error) {
-        console.error("Failed to send invitation email:", error);
-        throw new Error(`Failed to send invitation email: ${error.message}`);
-      }
+    if (error) {
+      console.error("Failed to send invitation email:", error);
+      throw new Error(`Failed to send invitation email: ${error.message}`);
+    }
 
-      return data;
-    } catch (sendError) {
-      console.error("Error sending invitation email:", sendError);
-      if (sendError instanceof Error) {
-        console.error("Send error stack:", sendError.stack);
-        console.error("Send error message:", sendError.message);
-      }
-      throw sendError;
+    return data;
+  } catch (sendError) {
+    console.error("Error sending invitation email:", sendError);
+    if (sendError instanceof Error) {
+      console.error("Send error stack:", sendError.stack);
+      console.error("Send error message:", sendError.message);
     }
-  } catch (error) {
-    // Wrap all errors to ensure they're properly formatted
-    console.error("Error in sendInvitationEmail function:", error);
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error(`Unexpected error: ${String(error)}`);
+    throw sendError;
   }
 }
