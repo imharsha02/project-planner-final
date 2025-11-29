@@ -5,6 +5,7 @@
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
 import { randomUUID } from "crypto";
 import { sendInvitationEmail } from "@/lib/emails/sendInvitationEmail";
+import { auth } from "@/app/auth";
 
 const supabase = createServerSupabaseServiceClient();
 
@@ -48,11 +49,25 @@ export async function processSingleTeamMemberAction(
   }
 
   try {
-    // 1. Get the current user (The Inviter)
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
-    if (!currentUser) return { success: false, error: "Not authenticated." };
+    // 1. Get the current user (The Inviter) using NextAuth
+    const session = await auth();
+    if (!session?.user?.email) {
+      return { success: false, error: "Not authenticated." };
+    }
+
+    // Get the current user from the users table
+    const { data: currentUserData, error: currentUserError } = await supabase
+      .from("users")
+      .select("id, user_email, username")
+      .eq("user_email", session.user.email)
+      .single();
+
+    if (currentUserError || !currentUserData) {
+      return {
+        success: false,
+        error: "User not found. Please ensure you are logged in.",
+      };
+    }
 
     // 2. Check if the user already exists in your app (public.users)
     const { data: existingUser } = await supabase
@@ -120,12 +135,11 @@ export async function processSingleTeamMemberAction(
           project_id: projectId,
           email: email,
           token: token,
-          invited_by: currentUser.id,
+          invited_by: currentUserData.id,
           status: "pending",
           expires_at: expiresAt.toISOString(),
           accepted_at: null,
           created_at: new Date().toISOString(),
-          // Ensure you set invited_by column if it exists and is required
         });
 
       if (inviteError) throw inviteError;
@@ -137,14 +151,8 @@ export async function processSingleTeamMemberAction(
         .eq("id", projectId)
         .single();
 
-      // Get inviter's username from users table
-      const { data: inviterData } = await supabase
-        .from("users")
-        .select("username")
-        .eq("user_email", currentUser.email)
-        .single();
-
-      const inviterName = inviterData?.username || "A team member";
+      // Use the username we already fetched
+      const inviterName = currentUserData.username || "A team member";
 
       try {
         await sendInvitationEmail({
