@@ -27,7 +27,7 @@ import { updateProjectTeamStatusAction } from "@/app/actions/projectaActions";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { processSingleTeamMemberAction } from "@/app/actions/team";
+import { processMultipleTeamMembersAction } from "@/app/actions/team";
 
 type TeamMember = { id: string; member_email: string; user_id?: string | null };
 
@@ -236,29 +236,28 @@ const ProjectDetailContent = ({
     try {
       setTeamMembersError(null);
       setIsAddingTeamMembers(true);
-      // 1. Call the new single-member action for every email concurrently
-      const results = await Promise.all(
-        normalizedEmails.map((email) =>
-          processSingleTeamMemberAction(projectId, email)
-        )
+      // 1. Call the server action that handles multiple emails
+      const result = await processMultipleTeamMembersAction(
+        projectId,
+        normalizedEmails
       );
 
-      // 2. Aggregate Results (You need to adjust how you handle the successful counts)
-      const addedMembers: TeamMember[] = []; // We can't easily track the IDs added in a loop like this
+      // 2. Aggregate Results
+      const addedMembers: TeamMember[] = [];
       let invitationsSent = 0;
       let membersAddedCount = 0;
 
-      // Manually process the results from the Promise.all
+      // Process the results from the server action
       const errors: string[] = [];
-      results.forEach((result) => {
-        if (result.success) {
-          if (result.isInvitation) {
+      result.results.forEach((item) => {
+        if (item.success) {
+          if (item.isInvitation) {
             invitationsSent++;
           } else {
             membersAddedCount++;
           }
-        } else if (result.error) {
-          errors.push(result.error);
+        } else if (item.error) {
+          errors.push(item.error);
         }
       });
 

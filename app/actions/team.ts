@@ -8,6 +8,30 @@ import { sendInvitationEmail } from "@/lib/emails/sendInvitationEmail";
 
 const supabase = createServerSupabaseServiceClient();
 
+export async function processMultipleTeamMembersAction(
+  projectId: string,
+  emails: string[]
+): Promise<{
+  success: boolean;
+  error?: string;
+  results: Array<{
+    success: boolean;
+    error?: string;
+    message?: string;
+    isInvitation?: boolean;
+  }>;
+}> {
+  const results = await Promise.all(
+    emails.map((email) => processSingleTeamMemberAction(projectId, email))
+  );
+
+  const hasErrors = results.some((r) => !r.success);
+  return {
+    success: !hasErrors,
+    results,
+  };
+}
+
 export async function processSingleTeamMemberAction(
   projectId: string,
   email: string // <-- Now expects the email directly
