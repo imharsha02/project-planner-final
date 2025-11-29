@@ -32,9 +32,20 @@ export async function sendInvitationEmail({
   inviteToken,
   projectId,
 }: SendInvitationEmailParams) {
+  console.log("📧 sendInvitationEmail called with:", {
+    to,
+    projectName,
+    inviterName,
+  });
+
   if (!process.env.RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY is not configured");
+    const errorMsg =
+      "RESEND_API_KEY is not configured. Please set it in your environment variables.";
+    console.error("❌", errorMsg);
+    throw new Error(errorMsg);
   }
+
+  console.log("✅ RESEND_API_KEY is configured");
 
   const baseUrl =
     process.env.NEXTAUTH_URL ||
@@ -77,8 +88,11 @@ export async function sendInvitationEmail({
 
   try {
     const resend = getResendClient();
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+    console.log(`📤 Sending email from ${fromEmail} to ${to}...`);
+
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+      from: fromEmail,
       to: [to],
       subject: `Invitation to join ${projectName}`,
       html: emailHtml,
@@ -86,10 +100,14 @@ export async function sendInvitationEmail({
     });
 
     if (error) {
-      console.error("Failed to send invitation email:", error);
-      throw new Error(`Failed to send invitation email: ${error.message}`);
+      console.error("❌ Resend API error:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      throw new Error(
+        `Failed to send invitation email: ${error.message || JSON.stringify(error)}`
+      );
     }
 
+    console.log("✅ Email sent successfully. Response:", data);
     return data;
   } catch (sendError) {
     console.error("Error sending invitation email:", sendError);

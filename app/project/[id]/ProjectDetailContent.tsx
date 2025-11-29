@@ -249,10 +249,15 @@ const ProjectDetailContent = ({
 
       // Process the results from the server action
       const errors: string[] = [];
+      const warnings: string[] = [];
       result.results.forEach((item) => {
         if (item.success) {
           if (item.isInvitation) {
             invitationsSent++;
+            // Check if there's an error message indicating email failure
+            if (item.error && item.error.includes("Email sending failed")) {
+              warnings.push(item.error);
+            }
           } else {
             membersAddedCount++;
           }
@@ -264,6 +269,11 @@ const ProjectDetailContent = ({
       // Display any errors that occurred
       if (errors.length > 0) {
         setTeamMembersError(errors.join(". "));
+      } else if (warnings.length > 0) {
+        // Show warnings if emails failed but invitations were created
+        setTeamMembersError(
+          `⚠️ ${warnings.length} invitation(s) created but email(s) failed to send: ${warnings.join(". ")}`
+        );
       }
 
       // Since tracking the new ID is complicated, rely on router.refresh() for the list update.

@@ -155,6 +155,7 @@ export async function processSingleTeamMemberAction(
       const inviterName = currentUserData.username || "A team member";
 
       try {
+        console.log(`Attempting to send invitation email to ${email}...`);
         await sendInvitationEmail({
           to: email,
           projectName: projectData?.project_name || "Project",
@@ -162,20 +163,23 @@ export async function processSingleTeamMemberAction(
           inviteToken: token,
           projectId: projectId,
         });
-        console.log(`Invitation email sent successfully to ${email}`);
+        console.log(`✅ Invitation email sent successfully to ${email}`);
       } catch (emailError) {
+        const errorMessage =
+          emailError instanceof Error ? emailError.message : "Unknown error";
         console.error(
-          `Failed to send invitation email to ${email}:`,
-          emailError
+          `❌ Failed to send invitation email to ${email}:`,
+          errorMessage
         );
+        console.error("Full error:", emailError);
+
         // Even if email fails, the invitation is already in the database
         // So we return success but with a warning message
         return {
           success: true,
-          message: `Invitation created but email failed to send: ${
-            emailError instanceof Error ? emailError.message : "Unknown error"
-          }`,
+          message: `Invitation created but email failed to send: ${errorMessage}`,
           isInvitation: true,
+          error: `Email sending failed: ${errorMessage}`, // Also include in error field
         };
       }
 
