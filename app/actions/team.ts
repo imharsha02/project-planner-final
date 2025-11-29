@@ -122,13 +122,30 @@ export async function processSingleTeamMemberAction(
 
       const inviterName = inviterData?.username || "A team member";
 
-      await sendInvitationEmail({
-        to: email,
-        projectName: projectData?.project_name || "Project",
-        inviterName: inviterName,
-        inviteToken: token,
-        projectId: projectId,
-      });
+      try {
+        await sendInvitationEmail({
+          to: email,
+          projectName: projectData?.project_name || "Project",
+          inviterName: inviterName,
+          inviteToken: token,
+          projectId: projectId,
+        });
+        console.log(`Invitation email sent successfully to ${email}`);
+      } catch (emailError) {
+        console.error(
+          `Failed to send invitation email to ${email}:`,
+          emailError
+        );
+        // Even if email fails, the invitation is already in the database
+        // So we return success but with a warning message
+        return {
+          success: true,
+          message: `Invitation created but email failed to send: ${
+            emailError instanceof Error ? emailError.message : "Unknown error"
+          }`,
+          isInvitation: true,
+        };
+      }
 
       return {
         success: true,
@@ -138,6 +155,8 @@ export async function processSingleTeamMemberAction(
     }
   } catch (error) {
     console.error("Server Action Error:", error);
-    return { success: false, error: "An unexpected error occurred." };
+    const errorMessage =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+    return { success: false, error: errorMessage };
   }
 }

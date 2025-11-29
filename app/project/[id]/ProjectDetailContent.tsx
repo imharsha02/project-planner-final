@@ -249,17 +249,23 @@ const ProjectDetailContent = ({
       let membersAddedCount = 0;
 
       // Manually process the results from the Promise.all
+      const errors: string[] = [];
       results.forEach((result) => {
         if (result.success) {
           if (result.isInvitation) {
-            // Add this property to your Server Action result type
             invitationsSent++;
           } else {
             membersAddedCount++;
-            // Note: Getting the new ID here is tricky. Easiest fix is to router.refresh().
           }
+        } else if (result.error) {
+          errors.push(result.error);
         }
       });
+
+      // Display any errors that occurred
+      if (errors.length > 0) {
+        setTeamMembersError(errors.join(". "));
+      }
 
       // Since tracking the new ID is complicated, rely on router.refresh() for the list update.
 
@@ -269,7 +275,12 @@ const ProjectDetailContent = ({
       setTeamMemberEmails([]);
       router.refresh(); // Crucial for updating the existingTeamMembers list
     } catch (error) {
-      // ... (error handling) ...
+      console.error("Error adding team members:", error);
+      setTeamMembersError(
+        error instanceof Error
+          ? error.message
+          : "Failed to add team members. Please try again."
+      );
     } finally {
       setIsAddingTeamMembers(false);
     }
