@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import AddStepsSection from "@/app/components/AddStepsSection";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -269,11 +270,31 @@ const ProjectDetailContent = ({
       // Display any errors that occurred
       if (errors.length > 0) {
         setTeamMembersError(errors.join(". "));
+        toast.error("Failed to add some team members", {
+          description: errors.join(". "),
+        });
       } else if (warnings.length > 0) {
         // Show warnings if emails failed but invitations were created
-        setTeamMembersError(
-          `⚠️ ${warnings.length} invitation(s) created but email(s) failed to send: ${warnings.join(". ")}`
-        );
+        const warningMessage = `${warnings.length} invitation(s) created but email(s) failed to send: ${warnings.join(". ")}`;
+        setTeamMembersError(`⚠️ ${warningMessage}`);
+        toast.warning("Invitations created but emails failed", {
+          description: warnings.join(". "),
+        });
+      } else {
+        // Show success toast notifications
+        if (invitationsSent > 0 && membersAddedCount > 0) {
+          toast.success("Team members added successfully!", {
+            description: `${membersAddedCount} member(s) added and ${invitationsSent} invitation(s) sent.`,
+          });
+        } else if (invitationsSent > 0) {
+          toast.success("Invitation(s) sent successfully!", {
+            description: `${invitationsSent} invitation email(s) sent. Users will receive an email to join the project.`,
+          });
+        } else if (membersAddedCount > 0) {
+          toast.success("Team member(s) added successfully!", {
+            description: `${membersAddedCount} member(s) added to the project.`,
+          });
+        }
       }
 
       // Since tracking the new ID is complicated, rely on router.refresh() for the list update.
