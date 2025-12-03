@@ -47,11 +47,18 @@ export async function sendInvitationEmail({
 
   console.log("✅ RESEND_API_KEY is configured");
 
+  // Get the base URL for invitation links
+  // Priority: NEXTAUTH_URL > NEXT_PUBLIC_APP_URL > fallback to localhost
   const baseUrl =
     process.env.NEXTAUTH_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
+  console.log("🌐 Base URL for invitation:", baseUrl);
   const inviteUrl = `${baseUrl}/invite/accept?token=${inviteToken}&project=${projectId}`;
+  console.log("🔗 Invitation URL:", inviteUrl);
 
   let emailHtml: string;
   let emailText: string;
@@ -102,9 +109,14 @@ export async function sendInvitationEmail({
     if (error) {
       console.error("❌ Resend API error:", error);
       console.error("Error details:", JSON.stringify(error, null, 2));
-      throw new Error(
-        `Failed to send invitation email: ${error.message || JSON.stringify(error)}`
-      );
+
+      // Provide helpful error message for domain verification issues
+      let errorMessage = error.message || JSON.stringify(error);
+      if (errorMessage.includes("testing emails to your own email address")) {
+        errorMessage = `You can only send testing emails to your own email address when using onboarding@resend.dev. To send emails to other recipients, please verify a domain at https://resend.com/domains and set RESEND_FROM_EMAIL to an email using that domain.`;
+      }
+
+      throw new Error(`Failed to send invitation email: ${errorMessage}`);
     }
 
     console.log("✅ Email sent successfully. Response:", data);

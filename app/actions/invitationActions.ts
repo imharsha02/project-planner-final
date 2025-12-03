@@ -1,6 +1,7 @@
 "use server";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
 import { randomUUID } from "crypto";
+import { auth } from "@/app/auth";
 
 const supabase = createServerSupabaseServiceClient();
 /**
@@ -36,17 +37,27 @@ export async function acceptInvitationAction(
       };
     }
 
-    // Get user's email
+    // Get the current user's email from NextAuth session
+    const session = await auth();
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        error: "Not authenticated. Please sign in again.",
+      };
+    }
+
+    // Get user from users table by email (not by OAuth provider ID)
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("user_email, username")
-      .eq("id", userId)
+      .select("id, user_email, username")
+      .eq("user_email", session.user.email)
       .single();
 
     if (userError || !user) {
       return {
         success: false,
-        error: "User not found.",
+        error:
+          "User not found. Please ensure you are logged in with the correct email.",
       };
     }
 
@@ -63,7 +74,7 @@ export async function acceptInvitationAction(
       .from("team_members")
       .select("id")
       .eq("project_id", invitation.project_id)
-      .eq("user_id", userId)
+      .eq("user_id", user.id)
       .maybeSingle();
 
     if (existingMember) {
@@ -84,7 +95,7 @@ export async function acceptInvitationAction(
       id: randomUUID(),
       project_id: invitation.project_id,
       member_email: user.user_email,
-      user_id: userId,
+      user_id: user.id,
     });
 
     if (insertError) {
@@ -101,7 +112,7 @@ export async function acceptInvitationAction(
       .update({
         status: "accepted",
         accepted_at: new Date().toISOString(),
-        accepted_by: userId,
+        accepted_by: user.id,
       })
       .eq("token", token);
 
