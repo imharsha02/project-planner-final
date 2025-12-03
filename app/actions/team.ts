@@ -70,14 +70,30 @@ export async function processSingleTeamMemberAction(
     }
 
     // 2. Check if the user already exists in your app (public.users)
-    const { data: existingUser } = await supabase
+    // Normalize email to lowercase for consistent lookup
+    const normalizedEmail = email.trim().toLowerCase();
+    console.log(`Looking up user with email: ${normalizedEmail}`);
+
+    const { data: existingUser, error: lookupError } = await supabase
       .from("users")
-      .select("id, user_email, username, name") // Select necessary fields
-      .ilike("user_email", email) // Use ilike for case-insensitive search
+      .select("id, user_email, username, name")
+      .ilike("user_email", normalizedEmail) // Use ilike for case-insensitive search
       .maybeSingle();
+
+    if (lookupError) {
+      console.error(`Error looking up user ${normalizedEmail}:`, lookupError);
+    }
+
+    console.log(
+      `User lookup result for ${normalizedEmail}:`,
+      existingUser ? "Found" : "Not found"
+    );
 
     if (existingUser) {
       // --- PATH A: User Exists -> Add directly to Team ---
+      console.log(
+        `User ${email} exists in users table, adding directly to team...`
+      );
 
       // Check for duplicates
       const { data: alreadyInTeam } = await supabase
@@ -88,19 +104,28 @@ export async function processSingleTeamMemberAction(
         .maybeSingle();
 
       if (alreadyInTeam) {
+        console.log(`User ${email} is already in this team.`);
         return { success: false, error: `${email} is already in this team.` };
       }
 
-      // 🛑 FIX: Ensure you are passing the required 'member_email' and 'user_id'
+      // Add existing user directly to team_members
+      console.log(
+        `Adding user ${email} (ID: ${existingUser.id}) to team_members...`
+      );
       const { error: insertError } = await supabase
         .from("team_members")
         .insert({
           project_id: projectId,
           user_id: existingUser.id,
-          member_email: existingUser.user_email, // Required by your team_members schema
+          member_email: existingUser.user_email,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error(`Failed to add user ${email} to team:`, insertError);
+        throw insertError;
+      }
+
+      console.log(`✅ Successfully added user ${email} to team.`);
       return {
         success: true,
         message: `${email} added to team successfully.`,
