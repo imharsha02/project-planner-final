@@ -11,6 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -24,9 +30,9 @@ const Header = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex items-center justify-center fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-border/40 z-50 shadow-sm"
+      className="flex items-center justify-center fixed top-0 w-full"
     >
-      <div className="flex items-center rounded-full bg-gradient-to-r from-gray-50 to-gray-100/80 my-3 justify-between px-3 sm:px-6 py-2 w-full sm:w-[90%] md:w-2/3 lg:w-1/2 shadow-md border border-border/20 mx-2 sm:mx-0">
+      <div className="flex items-center my-3 justify-between px-3 sm:px-6 py-2 w-full sm:w-[90%] md:w-2/3 lg:w-1/2 mx-2 sm:mx-0">
         <motion.div
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
           className="flex-shrink-0"
@@ -72,13 +78,13 @@ const Header = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Badge
+                  {/* <Badge
                     variant="outline"
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="cursor-pointer p-2 sm:p-3 hover:shadow-md transition-all duration-200 bg-card border-border/50 hover:bg-destructive/10 hover:border-destructive/30 text-xs sm:text-sm"
                   >
                     Logout
-                  </Badge>
+                  </Badge> */}
                 </motion.div>
               </div>
             </motion.div>
@@ -261,18 +267,27 @@ const Header = () => {
           whileHover={{ scale: 1.1 }}
           className="hidden md:block absolute right-4 lg:right-10"
         >
-          <Avatar
-            className="h-10 w-10 border-2 border-primary/20 shadow-md"
-            title={userName || "User"}
-          >
-            <AvatarImage
-              src={userImage ?? undefined}
-              alt={userName || "User"}
-            />
-            <AvatarFallback className="bg-primary/10">
-              {userName?.charAt(0) || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Avatar
+                className="h-10 w-10 border-2 border-primary/20 shadow-md"
+                title={userName || "User"}
+              >
+                <AvatarImage
+                  src={userImage ?? undefined}
+                  alt={userName || "User"}
+                />
+                <AvatarFallback className="bg-primary/10">
+                  {userName?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </motion.div>
       )}
     </motion.div>
