@@ -56,64 +56,81 @@ export function ProjectCard({
       }}
       className="h-full"
     >
-      <Card className="h-full flex flex-col cursor-pointer border-border/50 group shadow-sm hover:shadow-lg transition-shadow">
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
-          <div className="space-y-1 flex-1">
-            <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-              {project_name}
-            </CardTitle>
-            <Badge variant="secondary" className="mt-1">
-              <Building2 className="mr-1 h-3 w-3" />
-              {department}
-            </Badge>
-          </div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+      <motion.div
+        whileHover={{
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        <Card className="h-full flex flex-col cursor-pointer border-border/50 shadow-sm">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+            <div className="space-y-1 flex-1">
+              <motion.div
+                whileHover={{ color: "hsl(var(--primary))" }}
+                transition={{ duration: 0.2 }}
+              >
+                <CardTitle className="text-lg line-clamp-2">
+                  {project_name}
+                </CardTitle>
+              </motion.div>
+              <Badge variant="secondary" className="mt-1">
+                <Building2 className="mr-1 h-3 w-3" />
+                {department}
+              </Badge>
+            </div>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteProject(id);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          </CardHeader>
+
+          <CardContent
+            className="flex-1"
+            onClick={() => router.push(`/project/${id}`)}
+          >
+            <div className="space-y-3">
+              <div className="flex items-start gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-muted-foreground text-xs">Start Date</p>
+                  <p className="font-medium">{formatDate(start_date)}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-muted-foreground text-xs">End Date</p>
+                  <p className="font-medium">{formatDate(end_date)}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+
+          <CardFooter
+            className="pt-4 border-t"
+            onClick={() => router.push(`/project/${id}`)}
+          >
             <Button
               variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteProject(id);
-              }}
+              className="w-full justify-between"
+              size="sm"
             >
-              <Trash2 className="h-4 w-4" />
+              View Details
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
-          </motion.div>
-        </CardHeader>
-
-        <CardContent
-          className="flex-1"
-          onClick={() => router.push(`/project/${id}`)}
-        >
-          <div className="space-y-3">
-            <div className="flex items-start gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-muted-foreground text-xs">Start Date</p>
-                <p className="font-medium">{formatDate(start_date)}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-muted-foreground text-xs">End Date</p>
-                <p className="font-medium">{formatDate(end_date)}</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-
-        <CardFooter
-          className="pt-4 border-t"
-          onClick={() => router.push(`/project/${id}`)}
-        >
-          <Button variant="ghost" className="w-full justify-between" size="sm">
-            View Details
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </CardFooter>
-      </Card>
+          </CardFooter>
+        </Card>
+      </motion.div>
     </motion.div>
   );
 }

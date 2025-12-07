@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Plus, LayoutDashboard, Menu, X, Sparkles } from "lucide-react";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -27,59 +28,87 @@ const Header = () => {
   const isLoading = status === "loading";
 
   return (
-    <motion.div
+    <motion.header
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md  shadow-sm"
+      transition={{ duration: 0.5 }}
+      className="fixed top-0 left-0 right-0 z-50 bg-background/70 border-b border-border/20"
       suppressHydrationWarning
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-evenly h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Left side: Logo and Navigation */}
           <div className="flex items-center gap-8">
             <motion.div
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className="flex-shrink-0"
             >
               <Link
                 href="/"
-                className="text-xl sm:text-2xl md:text-3xl font-bold tracking-wide bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:from-primary hover:to-primary/90 transition-all duration-200 block"
+                className="flex items-center gap-2 group"
               >
-                Project planner
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
+                  className="relative"
+                >
+                  <Sparkles className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+                </motion.div>
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
+                  Project Planner
+                </span>
               </Link>
             </motion.div>
 
             {/* Desktop Navigation */}
             {!isLoading && isAuthenticated && (
-              <div className="hidden md:flex items-center gap-1">
+              <nav className="hidden md:flex items-center gap-1">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
                   className="flex items-center gap-1"
                 >
-                  <Link
-                    href="/add-a-project"
-                    className="relative px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group"
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    Add a Project
-                    <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-[calc(100%-1rem)] group-hover:left-2"></span>
-                  </Link>
-                  <Link
-                    href="/Dashboard"
-                    className="relative px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      asChild
+                      className="gap-2"
+                    >
+                      <Link href="/add-a-project">
+                        <Plus className="h-4 w-4" />
+                        Add Project
+                      </Link>
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    Dashboard
-                    <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-[calc(100%-1rem)] group-hover:left-2"></span>
-                  </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      asChild
+                      className="gap-2"
+                    >
+                      <Link href="/Dashboard">
+                        <LayoutDashboard className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                  </motion.div>
                 </motion.div>
-              </div>
+              </nav>
             )}
           </div>
 
           {/* Right side: Auth buttons or Avatar */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             {!isLoading && !isAuthenticated && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -88,45 +117,43 @@ const Header = () => {
                 className="flex items-center gap-3"
               >
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={login}
                     variant="outline"
                     size="sm"
-                    className="cursor-pointer hover:shadow-md transition-all duration-200"
+                    className="gap-2"
                   >
-                    <span className="hidden sm:inline">Sign in with </span>
-                    <span className="sm:hidden">GitHub</span>
                     <Image
                       src="/images/github.svg"
                       alt="GitHub icon"
                       width={16}
                       height={16}
-                      className="ml-1.5"
                     />
+                    <span className="hidden sm:inline">Sign in with GitHub</span>
+                    <span className="sm:hidden">GitHub</span>
                   </Button>
                 </motion.div>
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={signInWithGoogle}
                     variant="outline"
                     size="sm"
-                    className="cursor-pointer hover:shadow-md transition-all duration-200"
+                    className="gap-2"
                   >
-                    <span className="hidden sm:inline">Sign in with </span>
-                    <span className="sm:hidden">Google</span>
                     <Image
                       src="/images/google.svg"
                       alt="Google icon"
                       width={16}
                       height={16}
-                      className="ml-1.5"
                     />
+                    <span className="hidden sm:inline">Sign in with Google</span>
+                    <span className="sm:hidden">Google</span>
                   </Button>
                 </motion.div>
               </motion.div>
@@ -138,9 +165,12 @@ const Header = () => {
             {!isLoading && isAuthenticated && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
                     <Avatar
-                      className="h-9 w-9 border-2 border-primary/20 shadow-md hover:border-primary/40 transition-colors cursor-pointer"
+                      className="h-9 w-9 border-2 border-primary/20 cursor-pointer"
                       title={userName || "User"}
                     >
                       <AvatarImage
@@ -151,7 +181,7 @@ const Header = () => {
                         {userName?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
-                  </button>
+                  </motion.button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
@@ -174,15 +204,24 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden"
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
             >
-              {mobileMenuOpen ? "✕" : "☰"}
-            </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+            </motion.div>
           </div>
 
           {/* Desktop Avatar */}
@@ -195,20 +234,24 @@ const Header = () => {
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  {/* <button className="outline-none focus:outline-none"> */}
-                  <Avatar
-                    className="h-10 w-10 border-2 border-primary/20 shadow-md hover:border-primary/40 transition-colors cursor-pointer"
-                    title={userName || "User"}
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="outline-none focus:outline-none"
                   >
-                    <AvatarImage
-                      src={userImage ?? undefined}
-                      alt={userName || "User"}
-                    />
-                    <AvatarFallback className="bg-primary/10 font-medium">
-                      {userName?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  {/* </button> */}
+                    <Avatar
+                      className="h-10 w-10 border-2 border-primary/20 cursor-pointer"
+                      title={userName || "User"}
+                    >
+                      <AvatarImage
+                        src={userImage ?? undefined}
+                        alt={userName || "User"}
+                      />
+                      <AvatarFallback className="bg-primary/10 font-medium">
+                        {userName?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
@@ -239,82 +282,123 @@ const Header = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden fixed top-16 md:top-20 left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border/40 shadow-lg z-40"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden overflow-hidden border-b border-border/20 bg-background/70"
           >
-            <div className="flex flex-col p-4 space-y-3">
+            <div className="flex flex-col p-4 space-y-2">
               {isAuthenticated ? (
                 <>
-                  <Link
-                    href="/add-a-project"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
                   >
-                    Add a Project
-                  </Link>
-                  <Link
-                    href="/Dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2"
+                      asChild
+                    >
+                      <Link
+                        href="/add-a-project"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Project
+                      </Link>
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 }}
                   >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={() => {
-                      signOut({ callbackUrl: "/" });
-                      setMobileMenuOpen(false);
-                    }}
-                    className="px-4 py-2 rounded-lg hover:bg-destructive/10 text-left transition-colors"
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2"
+                      asChild
+                    >
+                      <Link
+                        href="/Dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
                   >
-                    Logout
-                  </button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        signOut({ callbackUrl: "/" });
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </motion.div>
                 </>
               ) : (
                 <>
-                  <Button
-                    onClick={() => {
-                      login();
-                      setMobileMenuOpen(false);
-                    }}
-                    variant="outline"
-                    className="w-full justify-start"
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
                   >
-                    <Image
-                      src="/images/github.svg"
-                      alt="GitHub icon"
-                      width={16}
-                      height={16}
-                      className="mr-2"
-                    />
-                    Sign in with GitHub
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      signInWithGoogle();
-                      setMobileMenuOpen(false);
-                    }}
-                    variant="outline"
-                    className="w-full justify-start"
+                    <Button
+                      onClick={() => {
+                        login();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full justify-start gap-2"
+                    >
+                      <Image
+                        src="/images/github.svg"
+                        alt="GitHub icon"
+                        width={16}
+                        height={16}
+                      />
+                      Sign in with GitHub
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 }}
                   >
-                    <Image
-                      src="/images/google.svg"
-                      alt="Google icon"
-                      width={16}
-                      height={16}
-                      className="mr-2"
-                    />
-                    Sign in with Google
-                  </Button>
+                    <Button
+                      onClick={() => {
+                        signInWithGoogle();
+                        setMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full justify-start gap-2"
+                    >
+                      <Image
+                        src="/images/google.svg"
+                        alt="Google icon"
+                        width={16}
+                        height={16}
+                      />
+                      Sign in with Google
+                    </Button>
+                  </motion.div>
                 </>
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </motion.header>
   );
 };
 

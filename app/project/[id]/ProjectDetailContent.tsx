@@ -1,9 +1,8 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import AddStepsSection from "@/app/components/AddStepsSection";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +28,16 @@ import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { processMultipleTeamMembersAction } from "@/app/actions/team";
+import {
+  Building2,
+  Calendar,
+  Users,
+  Settings,
+  Mail,
+  Plus,
+  ArrowLeft,
+} from "lucide-react";
+import Link from "next/link";
 
 type TeamMember = { id: string; member_email: string; user_id?: string | null };
 
@@ -246,9 +255,22 @@ const ProjectDetailContent = ({
     setExistingTeamMembers([...initialTeamMembers]);
   }, [initialTeamMembers]);
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return null;
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-muted/20 py-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col space-y-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto w-full max-w-7xl flex flex-col space-y-8 px-4 sm:px-6 lg:px-8 py-8">
         <AlertDialog
           open={dialogOpen}
           onOpenChange={(open) => {
@@ -294,189 +316,304 @@ const ProjectDetailContent = ({
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Back Button and Header */}
         <motion.div
-          initial={{ opacity: 0, y: -16 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center gap-4"
         >
-          <Card className="shadow-lg border-border/60">
-            <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-3">
-                <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-                  {projectName || "Project"}
-                </CardTitle>
-                <CardDescription className="max-w-2xl text-base leading-relaxed">
-                  {projectDescription ||
-                    "Define your project goals and start outlining the steps needed to make it happen."}
-                </CardDescription>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/Dashboard">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Link>
+          </Button>
+        </motion.div>
+
+        {/* Project Header Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1 space-y-3">
+                  <CardTitle className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+                    {projectName || "Project"}
+                  </CardTitle>
+                  {projectDescription && (
+                    <CardDescription className="text-base leading-relaxed max-w-3xl">
+                      {projectDescription}
+                    </CardDescription>
+                  )}
+                </div>
+                <CardAction className="flex flex-col items-start sm:items-end gap-3">
+                  <Badge
+                    variant={projectStatusVariant}
+                    className="px-3 py-1.5 text-sm"
+                  >
+                    {projectStatusLabel}
+                  </Badge>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDialogOpen(true)}
+                      className="w-full sm:w-auto"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Update Status
+                    </Button>
+                  </motion.div>
+                </CardAction>
               </div>
-              <CardAction className="flex flex-col items-start gap-3 sm:items-end">
-                <Badge
-                  variant={projectStatusVariant}
-                  className="px-3 py-1 text-sm"
-                >
-                  {projectStatusLabel}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDialogOpen(true)}
-                  className="w-full sm:w-auto"
-                >
-                  Update team status
-                </Button>
-              </CardAction>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-lg border border-border/60 bg-muted/10 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Department
-                  </p>
-                  <p className="mt-2 text-base font-semibold">
-                    {department || "Not specified"}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-border/60 bg-muted/10 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Start date
-                  </p>
-                  <p className="mt-2 text-base font-semibold">
-                    {startDate || "Planning"}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-border/60 bg-muted/10 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    End date
-                  </p>
-                  <p className="mt-2 text-base font-semibold">
-                    {endDate || "To be decided"}
-                  </p>
-                </div>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-start gap-3 p-4 rounded-lg border bg-muted/50"
+                >
+                  <div className="p-2 rounded-md bg-primary/10">
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+                      Department
+                    </p>
+                    <p className="text-base font-semibold truncate">
+                      {department || "Not specified"}
+                    </p>
+                  </div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-start gap-3 p-4 rounded-lg border bg-muted/50"
+                >
+                  <div className="p-2 rounded-md bg-primary/10">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+                      Start Date
+                    </p>
+                    <p className="text-base font-semibold">
+                      {formatDate(startDate) || "Not set"}
+                    </p>
+                  </div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-start gap-3 p-4 rounded-lg border bg-muted/50"
+                >
+                  <div className="p-2 rounded-md bg-primary/10">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+                      End Date
+                    </p>
+                    <p className="text-base font-semibold">
+                      {formatDate(endDate) || "Not set"}
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <div className="space-y-6">
+        <div className="space-y-6">
+          {/* Team Members Section */}
+          <AnimatePresence>
             {isGroupProject && (
-              <Card className="shadow-lg border-border/60">
-                <CardHeader className="pb-0">
-                  <CardTitle>Team members</CardTitle>
-                  <CardDescription>
-                    Add team members to your project.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-2 pb-6 pt-2 sm:px-4">
-                  <div className="space-y-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                      <Label htmlFor="team-member-count">
-                        No. of Team Members
-                      </Label>
-                      <Input
-                        id="team-member-count"
-                        type="number"
-                        min={0}
-                        max={10}
-                        className="w-max"
-                        value={noOfTeamMembers}
-                        onChange={(e) =>
-                          handleTeamMemberCountChange(e.target.value)
-                        }
-                      />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      <CardTitle>Team Members</CardTitle>
                     </div>
-                    {teamMemberEmails.length > 0 && (
-                      <div className="space-y-3">
-                        {teamMemberEmails.map((member, index) => (
-                          <div
-                            key={`team-member-${index}`}
-                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
-                          >
-                            <Label
-                              htmlFor={`team-member-${index}`}
-                              className="sm:w-40"
-                            >
-                              Team member email {index + 1}
-                            </Label>
-                            <Input
-                              id={`team-member-${index}`}
-                              value={member}
-                              placeholder="Enter email"
-                              onChange={(e) =>
-                                handleTeamMemberEmailChange(
-                                  index,
-                                  e.target.value
-                                )
-                              }
-                              className="sm:flex-1"
-                            />
-                          </div>
-                        ))}
+                    <CardDescription>
+                      Invite team members to collaborate on this project.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Add Team Members Form */}
+                    <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                        <Label
+                          htmlFor="team-member-count"
+                          className="text-sm font-medium"
+                        >
+                          Number of Team Members
+                        </Label>
+                        <Input
+                          id="team-member-count"
+                          type="number"
+                          min={0}
+                          max={10}
+                          className="w-full sm:w-32"
+                          value={noOfTeamMembers}
+                          onChange={(e) =>
+                            handleTeamMemberCountChange(e.target.value)
+                          }
+                        />
                       </div>
-                    )}
-                    {teamMembersError && (
-                      <p className="text-sm font-medium text-destructive">
-                        {teamMembersError}
-                      </p>
-                    )}
-                    <div className="flex justify-center">
-                      <Button
-                        disabled={noOfTeamMembers === 0 || isAddingTeamMembers}
-                        variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto mx-auto"
-                        onClick={handleAddTeamMembers}
+                      <AnimatePresence>
+                        {teamMemberEmails.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-3"
+                          >
+                            {teamMemberEmails.map((member, index) => (
+                              <motion.div
+                                key={`team-member-${index}`}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
+                              >
+                                <Label
+                                  htmlFor={`team-member-${index}`}
+                                  className="text-sm font-medium sm:w-40"
+                                >
+                                  Email {index + 1}
+                                </Label>
+                                <Input
+                                  id={`team-member-${index}`}
+                                  type="email"
+                                  value={member}
+                                  placeholder="team.member@example.com"
+                                  onChange={(e) =>
+                                    handleTeamMemberEmailChange(
+                                      index,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="sm:flex-1"
+                                />
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      {teamMembersError && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-sm font-medium text-destructive p-3 rounded-md bg-destructive/10 border border-destructive/20"
+                        >
+                          {teamMembersError}
+                        </motion.p>
+                      )}
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        {isAddingTeamMembers ? "Adding..." : "Add team members"}
-                      </Button>
+                        <Button
+                          disabled={
+                            noOfTeamMembers === 0 || isAddingTeamMembers
+                          }
+                          variant="default"
+                          size="sm"
+                          className="w-full sm:w-auto"
+                          onClick={handleAddTeamMembers}
+                        >
+                          {isAddingTeamMembers ? (
+                            "Adding..."
+                          ) : (
+                            <>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Team Members
+                            </>
+                          )}
+                        </Button>
+                      </motion.div>
                     </div>
-                  </div>
 
-                  {/* Team members list */}
-                  {existingTeamMembers.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold">Team members</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {existingTeamMembers.map((member) => (
-                          <Button
-                            key={member.id}
-                            variant="secondary"
-                            size="sm"
-                            className="rounded-full"
-                          >
-                            {member.member_email}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    {/* Existing Team Members List */}
+                    {existingTeamMembers.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <h3 className="text-lg font-semibold">
+                            Current Team ({existingTeamMembers.length})
+                          </h3>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {existingTeamMembers.map((member, index) => (
+                            <motion.div
+                              key={member.id}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.05 }}
+                              whileHover={{ scale: 1.05 }}
+                            >
+                              <Badge
+                                variant="secondary"
+                                className="px-3 py-1.5 text-sm flex items-center gap-2"
+                              >
+                                <Mail className="h-3 w-3" />
+                                {member.member_email}
+                              </Badge>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
-            <Card className="shadow-lg border-border/60">
-              <CardHeader className="pb-0">
+          </AnimatePresence>
+
+          {/* Project Steps Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card>
+              <CardHeader>
                 <CardTitle className="text-xl font-semibold">
-                  Build your project plan
+                  Project Steps
                 </CardTitle>
                 <CardDescription>
-                  Break the work down into actionable steps and track progress
-                  as you go.
+                  Break your project into actionable steps and track progress as
+                  you go.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-2 pb-6 pt-2 sm:px-4">
+              <CardContent>
                 <AddStepsSection
                   projectId={projectId}
                   teamMembers={existingTeamMembers}
                 />
               </CardContent>
             </Card>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

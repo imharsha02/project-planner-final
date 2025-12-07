@@ -2,8 +2,6 @@ import React from "react";
 import { getProjects } from "@/app/lib/getProjects";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
 import ProjectDetailContent from "./ProjectDetailContent";
-import { TypographyH1 } from "@/app/components/Typography/TypographyH1";
-import { TypographyP } from "@/app/components/Typography/TypographyP";
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   try {
@@ -63,14 +61,14 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <TypographyH1 className="text-destructive mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-destructive mb-4">
             Error Loading Project
-          </TypographyH1>
-          <TypographyP className="text-gray-600">
+          </h1>
+          <p className="text-muted-foreground">
             {error instanceof Error
               ? error.message
               : "An unexpected error occurred."}
-          </TypographyP>
+          </p>
         </div>
       </div>
     );
