@@ -7,14 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+//import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -50,42 +50,21 @@ const Header = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center space-x-2">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+              <div className="flex items-center space-x-6">
+                <Link
+                  href="/add-a-project"
+                  className="relative text-sm font-medium text-foreground transition-all duration-300 hover:text-blue-600 group"
                 >
-                  <Badge
-                    variant="outline"
-                    className="cursor-pointer p-2 sm:p-3 hover:shadow-md transition-all duration-200 bg-card border-border/50 hover:bg-accent text-xs sm:text-sm"
-                  >
-                    <Link href="/add-a-project">Add a Project</Link>
-                  </Badge>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  Add a Project
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full group-hover:shadow-[0_2px_8px_rgba(37,99,235,0.6)]"></span>
+                </Link>
+                <Link
+                  href="/Dashboard"
+                  className="relative text-sm font-medium text-foreground transition-all duration-300 hover:text-blue-600 group"
                 >
-                  <Badge
-                    variant="outline"
-                    className="cursor-pointer p-2 sm:p-3 hover:shadow-md transition-all duration-200 bg-card border-border/50 hover:bg-accent text-xs sm:text-sm"
-                  >
-                    <Link href="/Dashboard">Dashboard</Link>
-                  </Badge>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {/* <Badge
-                    variant="outline"
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="cursor-pointer p-2 sm:p-3 hover:shadow-md transition-all duration-200 bg-card border-border/50 hover:bg-destructive/10 hover:border-destructive/30 text-xs sm:text-sm"
-                  >
-                    Logout
-                  </Badge> */}
-                </motion.div>
+                  Dashboard
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full group-hover:shadow-[0_2px_8px_rgba(37,99,235,0.6)]"></span>
+                </Link>
               </div>
             </motion.div>
           ) : (
@@ -142,38 +121,58 @@ const Header = () => {
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-2">
           {isAuthenticated && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-              whileHover={{ scale: 1.1 }}
-              className="mr-2"
-            >
-              <Avatar
-                className="h-8 w-8 border-2 border-primary/20 shadow-md"
-                title={userName || "User"}
-              >
-                <AvatarImage
-                  src={userImage ?? undefined}
-                  alt={userName || "User"}
-                />
-                <AvatarFallback className="bg-primary/10 text-xs">
-                  {userName?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-            </motion.div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                  whileHover={{ scale: 1.1 }}
+                  className="mr-2 cursor-pointer"
+                >
+                  <Avatar
+                    className="h-8 w-8 border-2 border-primary/20 shadow-md"
+                    title={userName || "User"}
+                  >
+                    <AvatarImage
+                      src={userImage ?? undefined}
+                      alt={userName || "User"}
+                    />
+                    <AvatarFallback className="bg-primary/10 text-xs">
+                      {userName?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="cursor-pointer">
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                >
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileMenuOpen ? "✕" : "☰"}
           </Button>
         </div>
       </div>
@@ -268,22 +267,38 @@ const Header = () => {
           className="hidden md:block absolute right-4 lg:right-10"
         >
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Avatar
-                className="h-10 w-10 border-2 border-primary/20 shadow-md"
-                title={userName || "User"}
-              >
-                <AvatarImage
-                  src={userImage ?? undefined}
-                  alt={userName || "User"}
-                />
-                <AvatarFallback className="bg-primary/10">
-                  {userName?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
+            <DropdownMenuTrigger asChild>
+              <button className="cursor-pointer">
+                <Avatar
+                  className="h-10 w-10 border-2 border-primary/20 shadow-md"
+                  title={userName || "User"}
+                >
+                  <AvatarImage
+                    src={userImage ?? undefined}
+                    alt={userName || "User"}
+                  />
+                  <AvatarFallback className="bg-primary/10">
+                    {userName?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="cursor-pointer">
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="cursor-pointer">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+              >
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
