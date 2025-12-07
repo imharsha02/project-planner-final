@@ -99,7 +99,7 @@ const Header = () => {
                 whileTap={{ scale: 0.95 }}
               >
 
-                
+
                 <Button
                   onClick={signInWithGoogle}
                   variant="outline"
