@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <SessionProviderWrapper>
           <Header />
-          <div className="pt-24 sm:pt-28 md:pt-32 max-w-7xl mx-auto p-3 sm:p-4 md:p-5">
+          <div className="pt-20 md:pt-24 max-w-7xl mx-auto p-3 sm:p-4 md:p-5">
             {children}
           </div>
           <Toaster />
