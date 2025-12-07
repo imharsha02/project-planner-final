@@ -5,6 +5,7 @@ import { Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteProjectAction } from "@/app/actions/projectaActions";
 import { motion } from "motion/react";
+import { TypographyP } from "./Typography/TypographyP";
 
 interface ProjectCardProps {
   id: string;
@@ -48,9 +49,8 @@ export function ProjectCard({
       className="w-full max-w-sm"
     >
       <Card className="w-full h-full px-0 hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm group overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <CardHeader className="flex items-center border-b px-4 py-3 justify-between relative z-10 bg-gradient-to-r from-card to-card/95">
-          <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors duration-200">
+          <CardTitle className="group-hover:text-primary transition-colors duration-200">
             {project_name}
           </CardTitle>
           <motion.div
@@ -73,24 +73,24 @@ export function ProjectCard({
           onClick={() => router.push(`/project/${id}`)}
           className="flex flex-col gap-3 cursor-pointer p-4 relative z-10"
         >
-          <p className="text-sm">
+          <TypographyP>
             <span className="font-semibold text-muted-foreground">
               Department:
             </span>{" "}
             <span className="text-foreground">{department}</span>
-          </p>
-          <p className="text-sm">
+          </TypographyP>
+          <TypographyP>
             <span className="font-semibold text-muted-foreground">
               Start Date:
             </span>{" "}
             <span className="text-foreground">{start_date || "Not set"}</span>
-          </p>
-          <p className="text-sm">
+          </TypographyP>
+          <TypographyP>
             <span className="font-semibold text-muted-foreground">
               End Date:
             </span>{" "}
             <span className="text-foreground">{end_date || "Not set"}</span>
-          </p>
+          </TypographyP>
         </CardContent>
       </Card>
     </motion.div>

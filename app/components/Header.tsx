@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-//import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import {
@@ -98,8 +97,6 @@ const Header = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-
-
                 <Button
                   onClick={signInWithGoogle}
                   variant="outline"
@@ -270,20 +267,18 @@ const Header = () => {
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="cursor-pointer">
-                <Avatar
-                  className="h-10 w-10 border-2 border-primary/20 shadow-md"
-                  title={userName || "User"}
-                >
-                  <AvatarImage
-                    src={userImage ?? undefined}
-                    alt={userName || "User"}
-                  />
-                  <AvatarFallback className="bg-primary/10">
-                    {userName?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
+              <Avatar
+                className="h-10 w-10 border-2 border-primary/20 shadow-md"
+                title={userName || "User"}
+              >
+                <AvatarImage
+                  src={userImage ?? undefined}
+                  alt={userName || "User"}
+                />
+                <AvatarFallback className="bg-primary/10">
+                  {userName?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild>

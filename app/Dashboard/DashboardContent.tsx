@@ -2,6 +2,9 @@
 import React from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import { motion } from "motion/react";
+import { TypographyH1 } from "../components/Typography/TypographyH1";
+import { TypographyP } from "../components/Typography/TypographyP";
+import { TypographyH3 } from "../components/Typography/TypographyH3";
 
 interface Project {
   id: string;
@@ -24,12 +27,12 @@ const DashboardContent = ({ projects }: DashboardContentProps) => {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent px-4">
+        <TypographyH1 className="sm:text-3xl md:text-4xl mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent px-4">
           Your Projects
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground px-4">
+        </TypographyH1>
+        <TypographyP className="sm:text-base">
           Manage and track all your projects
-        </p>
+        </TypographyP>
       </motion.div>
       {projects && projects.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 py-4 px-4">
@@ -67,11 +70,11 @@ const DashboardContent = ({ projects }: DashboardContentProps) => {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
-          <p className="text-muted-foreground max-w-md">
+          <TypographyH3>No projects yet</TypographyH3>
+          <TypographyP className="max-w-md">
             Get started by creating your first project. Click "Add a Project" to
             begin organizing your work.
-          </p>
+          </TypographyP>
         </motion.div>
       )}
     </div>

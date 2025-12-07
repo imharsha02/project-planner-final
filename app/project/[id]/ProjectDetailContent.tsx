@@ -66,11 +66,6 @@ const ProjectDetailContent = ({
     useState<TeamMember[]>(initialTeamMembers);
   const [isAddingTeamMembers, setIsAddingTeamMembers] = useState(false);
   const [teamMembersError, setTeamMembersError] = useState<string | null>(null);
-  const currentProjectId = projectId; // Get the ID from props or params
-  // const inviteActionWithId = processTeamMemberAction.bind(
-  //   null,
-  //   currentProjectId
-  // );
   const handleTeamMemberCountChange = (value: string) => {
     const parsedValue = Number(value);
     const sanitizedCount = Number.isNaN(parsedValue)
@@ -127,113 +122,6 @@ const ProjectDetailContent = ({
       );
       return;
     }
-
-    // try {
-    //   setTeamMembersError(null);
-    //   setIsAddingTeamMembers(true);
-    //   //const result = await addTeamMembersAction(projectId, normalizedEmails);
-    //   const results = await Promise.all(
-    //     normalizedEmails.map((email) =>
-    //       processSingleTeamMemberAction(projectId, email)
-    //     )
-    //   );
-    //   const addedMembers: TeamMember[] = []; // We can't easily track the IDs added in a loop like this
-    //   let invitationsSent = 0;
-    //   let membersAddedCount = 0;
-    //   results.forEach((result) => {
-    //     if (result.success) {
-    //       membersAddedCount++;
-    //     } else {
-    //       setTeamMembersError(result.error || "Failed to add team member.");
-    //     }
-    //   });
-    //   if (result.addedMembers && result.addedMembers.length > 0) {
-    //     const sanitizedMembers: TeamMember[] = result.addedMembers
-    //       .filter(
-    //         (
-    //           member
-    //         ): member is {
-    //           id: string;
-    //           member_email: string | null;
-    //           user_id: string | null;
-    //         } => Boolean(member?.id)
-    //       )
-    //       .map((member) => ({
-    //         id: member.id,
-    //         member_email: member.member_email ?? "Unknown email",
-    //         user_id: member.user_id ?? null,
-    //       }));
-
-    //     if (sanitizedMembers.length > 0) {
-    //       setExistingTeamMembers((prev) => [...prev, ...sanitizedMembers]);
-    //     }
-    //   }
-
-    //   // Show success message with invitation count
-    //   if (result.invitationsSent > 0 || result.addedMembers.length > 0) {
-    //     const addedCount = result.addedMembers.length;
-    //     const invitedCount = result.invitationsSent;
-    //     let message = "";
-    // if (addedCount > 0 && invitedCount > 0) {
-    //   message = `${addedCount} team member(s) added and ${invitedCount} invitation(s) sent.`;
-    // } else if (addedCount > 0) {
-    //   message = `${addedCount} team member(s) added.`;
-    // } else if (invitedCount > 0) {
-    //   message = `${invitedCount} invitation(s) sent. Users will receive an email to join the project.`;
-    // }
-    //     // Display success message
-    //     setTeamMembersError(null);
-    //     // Show toast notification
-    //     if (typeof window !== "undefined") {
-    //       const toast = document.createElement("div");
-    //       toast.className =
-    //         "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50";
-    //       toast.textContent = message;
-    //       document.body.appendChild(toast);
-    //       setTimeout(() => {
-    //         toast.remove();
-    //       }, 3500);
-    //     }
-    //   }
-
-    //   setNoOfTeamMembers(0);
-    //   setTeamMemberEmails([]);
-    //   router.refresh();
-    // }
-    // try {
-    //   setTeamMembersError(null);
-    //   setIsAddingTeamMembers(true);
-    //   const results = await Promise.all(
-    //     normalizedEmails.map((email) =>
-    //       processSingleTeamMemberAction(projectId, email)
-    //     )
-    //   );
-    //   let invitationsSent = 0;
-    //   let membersAddedCount = 0;
-    //   const addedMembers: TeamMember[] = [];
-    //   results.forEach((result) => {
-    //     if (result.success) {
-    //       if(result.isInvitation) {
-    //         invitationsSent++;
-    //       } else {
-    //         membersAddedCount++;
-    //       }
-    //     }
-    //   });
-    //   if (membersAddedCount > 0) {
-    //     setTeamMembersError(null);
-    //     router.refresh();
-    // }
-    // catch (error) {
-    //   console.error("Failed to add team members:", error);
-    //   setTeamMembersError(
-    //     error instanceof Error
-    //       ? error.message
-    //       : "Failed to add team members. Please try again."
-    //   );
-    // } finally {
-    //   setIsAddingTeamMembers(false);
-    // }
     try {
       setTeamMembersError(null);
       setIsAddingTeamMembers(true);
@@ -244,7 +132,6 @@ const ProjectDetailContent = ({
       );
 
       // 2. Aggregate Results
-      const addedMembers: TeamMember[] = [];
       let invitationsSent = 0;
       let membersAddedCount = 0;
 

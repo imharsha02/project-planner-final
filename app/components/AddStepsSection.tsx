@@ -330,7 +330,7 @@ export default function AddStepsSection({
                           <SelectValue placeholder="Assign member" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          <SelectItem value="Self">Self</SelectItem>
                           {teamMembers.map((member) => (
                             <SelectItem key={member.id} value={member.id}>
                               {member.member_email}
@@ -485,26 +485,3 @@ export default function AddStepsSection({
     </div>
   );
 }
-
-// <div>
-//   {steps.length > 0 ? (
-//     <div className="flex space-x-4">
-//       <p>Is this a team project?</p>
-//       <RadioGroup defaultValue="comfortable" className="flex">
-//         {/* Yes */}
-//         <div className="flex items-center gap-3">
-//           <RadioGroupItem value="yes" id="yes" />
-//           <Label htmlFor="yes">yes</Label>
-//         </div>
-
-//         {/* No */}
-//         <div className="flex items-center gap-3">
-//           <RadioGroupItem value="no" id="no" />
-//           <Label htmlFor="r2">No</Label>
-//         </div>
-//       </RadioGroup>
-//     </div>
-//   ) : (
-//     <></>
-//   )}
-// </div>
