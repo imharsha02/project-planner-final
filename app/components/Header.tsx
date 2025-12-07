@@ -29,7 +29,7 @@ const Header = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex items-center justify-center fixed top-0 w-full"
+      className="flex items-center justify-center fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm"
     >
       <div className="flex items-center my-3 justify-between px-3 sm:px-6 py-2 w-full sm:w-[90%] md:w-2/3 lg:w-1/2 mx-2 sm:mx-0">
         <motion.div
