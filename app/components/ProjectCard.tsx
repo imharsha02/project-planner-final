@@ -1,11 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2Icon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Trash2, Calendar, Building2, ArrowRight } from "lucide-react";
 import { deleteProjectAction } from "@/app/actions/projectaActions";
 import { motion } from "motion/react";
-import { TypographyP } from "./Typography/TypographyP";
 
 interface ProjectCardProps {
   id: string;
@@ -31,9 +31,21 @@ export function ProjectCard({
     router.refresh();
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Not set";
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <motion.div
-      key={id}
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{
@@ -41,58 +53,110 @@ export function ProjectCard({
         delay: index * 0.1,
         ease: [0.21, 1.11, 0.81, 0.99],
       }}
-      whileHover={{
-        y: -8,
+      whileHover={{ 
+        y: -8, 
         scale: 1.02,
-        transition: { duration: 0.2 },
+        transition: { duration: 0.2 }
       }}
-      className="w-full max-w-sm"
+      className="h-full"
     >
-      <Card className="w-full h-full px-0 hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm group overflow-hidden">
-        <CardHeader className="flex items-center border-b px-4 py-3 justify-between relative z-10 bg-gradient-to-r from-card to-card/95">
-          <CardTitle className="group-hover:text-primary transition-colors duration-200">
-            {project_name}
-          </CardTitle>
+        <motion.div
+          whileHover={{
+            boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+          }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card className="h-full flex flex-col cursor-pointer border-border/50 group shadow-sm">
+        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+          <div className="space-y-1 flex-1">
+            <motion.div
+              whileHover={{ color: "hsl(var(--primary))" }}
+              transition={{ duration: 0.2 }}
+            >
+              <CardTitle className="text-lg line-clamp-2">
+                {project_name}
+              </CardTitle>
+            </motion.div>
+            <Badge variant="secondary" className="mt-1">
+              <Building2 className="mr-1 h-3 w-3" />
+              {department}
+            </Badge>
+          </div>
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.9 }}
           >
             <Button
-              variant="outline"
-              className="cursor-pointer rounded-full w-8 h-8 p-0 hover:bg-destructive/10 hover:border-destructive/30 transition-all duration-200"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
                 deleteProject(id);
               }}
             >
-              <Trash2Icon className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </motion.div>
         </CardHeader>
-        <CardContent
+        
+        <CardContent 
+          className="flex-1"
           onClick={() => router.push(`/project/${id}`)}
-          className="flex flex-col gap-3 cursor-pointer p-4 relative z-10"
         >
-          <TypographyP>
-            <span className="font-semibold text-muted-foreground">
-              Department:
-            </span>{" "}
-            <span className="text-foreground">{department}</span>
-          </TypographyP>
-          <TypographyP>
-            <span className="font-semibold text-muted-foreground">
-              Start Date:
-            </span>{" "}
-            <span className="text-foreground">{start_date || "Not set"}</span>
-          </TypographyP>
-          <TypographyP>
-            <span className="font-semibold text-muted-foreground">
-              End Date:
-            </span>{" "}
-            <span className="text-foreground">{end_date || "Not set"}</span>
-          </TypographyP>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+            className="space-y-3"
+          >
+            <motion.div
+              className="flex items-start gap-2 text-sm"
+              whileHover={{ x: 4 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-muted-foreground text-xs">Start Date</p>
+                <p className="font-medium">{formatDate(start_date)}</p>
+              </div>
+            </motion.div>
+            <motion.div
+              className="flex items-start gap-2 text-sm"
+              whileHover={{ x: 4 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-muted-foreground text-xs">End Date</p>
+                <p className="font-medium">{formatDate(end_date)}</p>
+              </div>
+            </motion.div>
+          </motion.div>
         </CardContent>
+
+        <CardFooter 
+          className="pt-4 border-t"
+          onClick={() => router.push(`/project/${id}`)}
+        >
+          <motion.div
+            whileHover={{ x: 4 }}
+            transition={{ duration: 0.2 }}
+            className="w-full"
+          >
+            <Button variant="ghost" className="w-full justify-between" size="sm">
+              View Details
+              <motion.div
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </motion.div>
+            </Button>
+          </motion.div>
+        </CardFooter>
       </Card>
+        </motion.div>
     </motion.div>
   );
 }

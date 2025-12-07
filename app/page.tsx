@@ -22,7 +22,6 @@ import {
   TrendingUp,
   Zap,
   BarChart3,
-  Clock,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
@@ -213,7 +212,7 @@ const Page = () => {
                   <Button
                     asChild
                     size="lg"
-                    className="text-base px-8 py-6 shadow-lg hover:shadow-xl transition-shadow"
+                    className="cursor-pointer text-base px-8 py-6 shadow-lg hover:shadow-xl transition-shadow"
                   >
                     <Link href="/Dashboard">
                       Go to Dashboard
@@ -229,7 +228,7 @@ const Page = () => {
                     asChild
                     size="lg"
                     variant="outline"
-                    className="text-base px-8 py-6 border-2"
+                    className="cursor-pointer text-base px-8 py-6 border-2"
                   >
                     <Link href="/add-a-project">Add a Project</Link>
                   </Button>
@@ -384,7 +383,7 @@ const Page = () => {
                         onClick={login}
                         size="lg"
                         variant="outline"
-                        className="text-base px-8 py-6 border-2 hover:shadow-lg transition-shadow"
+                        className="cursor-pointer text-base px-8 py-6 border-2 hover:shadow-lg transition-shadow"
                       >
                         Sign in with GitHub
                         <Image
@@ -403,7 +402,7 @@ const Page = () => {
                       <Button
                         onClick={signInWithGoogle}
                         size="lg"
-                        className="text-base px-8 py-6 shadow-lg hover:shadow-xl transition-shadow"
+                        className="cursor-pointer text-base px-8 py-6 shadow-lg hover:shadow-xl transition-shadow"
                       >
                         Sign in with Google
                         <Image
