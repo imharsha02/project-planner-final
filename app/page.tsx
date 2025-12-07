@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { login, signInWithGoogle } from "./lib/actions/auth";
 import {
   CheckCircle2,
   Calendar,
@@ -378,9 +380,39 @@ const Page = () => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Button size="lg" className="text-base px-8 py-6">
-                        Get Started Free
-                        <ArrowRight className="ml-2 w-4 h-4" />
+                      <Button
+                        onClick={login}
+                        size="lg"
+                        variant="outline"
+                        className="text-base px-8 py-6 border-2 hover:shadow-lg transition-shadow"
+                      >
+                        Sign in with GitHub
+                        <Image
+                          src="/images/github.svg"
+                          alt="GitHub icon"
+                          width={20}
+                          height={20}
+                          className="ml-2"
+                        />
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        onClick={signInWithGoogle}
+                        size="lg"
+                        className="text-base px-8 py-6 shadow-lg hover:shadow-xl transition-shadow"
+                      >
+                        Sign in with Google
+                        <Image
+                          src="/images/google.svg"
+                          alt="Google icon"
+                          width={20}
+                          height={20}
+                          className="ml-2"
+                        />
                       </Button>
                     </motion.div>
                   </motion.div>
