@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FolderOpen, Plus, Calendar, Building2 } from "lucide-react";
 import { motion } from "motion/react";
+import { TypographyP } from "../components/Typography/TypographyP";
 
 interface Project {
   id: string;
@@ -111,25 +112,25 @@ const DashboardContent = ({ projects }: DashboardContentProps) => {
                 <CardTitle className="text-sm font-medium">
                   Total Projects
                 </CardTitle>
-                <motion.div
+                {/* <motion.div
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                >
-                  <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                </motion.div>
+                > */}
+                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                {/* </motion.div> */}
               </CardHeader>
               <CardContent>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                {/* <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.3, type: "spring" }}
                   className="text-2xl font-bold"
-                >
-                  {stats.totalProjects}
-                </motion.div>
-                <p className="text-xs text-muted-foreground">
+                > */}
+                <div className="text-2xl font-bold">{stats.totalProjects}</div>
+                {/* </motion.div> */}
+                <TypographyP className="text-xs text-muted-foreground">
                   All your projects
-                </p>
+                </TypographyP>
               </CardContent>
             </Card>
           </motion.div>
@@ -147,17 +148,18 @@ const DashboardContent = ({ projects }: DashboardContentProps) => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                {/* <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4, type: "spring" }}
                   className="text-2xl font-bold"
-                >
-                  {stats.activeProjects}
-                </motion.div>
-                <p className="text-xs text-muted-foreground">
+                > */}
+                <div className="text-2xl font-bold">{stats.activeProjects}</div>
+
+                {/* </motion.div> */}
+                <TypographyP className="text-muted-foreground">
                   Currently in progress
-                </p>
+                </TypographyP>
               </CardContent>
             </Card>
           </motion.div>
@@ -175,17 +177,17 @@ const DashboardContent = ({ projects }: DashboardContentProps) => {
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                {/* <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.5, type: "spring" }}
                   className="text-2xl font-bold"
-                >
-                  {stats.departments}
-                </motion.div>
-                <p className="text-xs text-muted-foreground">
+                > */}
+                <div className="text-2xl font-bold">{stats.departments}</div>
+                {/* </motion.div> */}
+                <TypographyP className="text-xs text-muted-foreground">
                   Different departments
-                </p>
+                </TypographyP>
               </CardContent>
             </Card>
           </motion.div>
@@ -209,9 +211,9 @@ const DashboardContent = ({ projects }: DashboardContentProps) => {
           </motion.h2>
           {projects && projects.length > 0 && (
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.5, type: "spring" }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Badge variant="secondary">
                 {projects.length}{" "}
