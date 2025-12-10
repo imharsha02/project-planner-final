@@ -307,6 +307,7 @@ export default function ProfileContent() {
                         department={project.department}
                         start_date={project.start_date}
                         end_date={project.end_date}
+                        showDelete={false}
                       />
                     ))}
                   </div>
@@ -354,6 +355,7 @@ export default function ProfileContent() {
                         department={project.department}
                         start_date={project.start_date}
                         end_date={project.end_date}
+                        showDelete={false}
                       />
                     ))}
                   </div>

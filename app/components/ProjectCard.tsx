@@ -19,6 +19,7 @@ interface ProjectCardProps {
   department: string;
   start_date: string | null;
   end_date: string | null;
+  showDelete?: boolean;
 }
 
 export function ProjectCard({
@@ -27,6 +28,7 @@ export function ProjectCard({
   department,
   start_date,
   end_date,
+  showDelete = true,
 }: ProjectCardProps) {
   const router = useRouter();
 
@@ -79,19 +81,21 @@ export function ProjectCard({
                 {department}
               </Badge>
             </div>
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteProject(id);
-                }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </motion.div>
+            {showDelete && (
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteProject(id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
           </CardHeader>
 
           <CardContent
