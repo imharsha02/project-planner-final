@@ -13,9 +13,31 @@ import { Input } from "@/components/ui/input";
 import {
   getProfileAction,
   updateUsernameAction,
+  getUserProjectsAction,
 } from "../actions/profileActions";
 import { toast } from "sonner";
-import { User, Edit2, Save, X, Mail, Loader2 } from "lucide-react";
+import {
+  User,
+  Edit2,
+  Save,
+  X,
+  Mail,
+  Loader2,
+  FolderOpen,
+  Users,
+} from "lucide-react";
+import { ProjectCard } from "../components/ProjectCard";
+import { Badge } from "@/components/ui/badge";
+
+interface Project {
+  id: string;
+  project_name: string;
+  department: string;
+  start_date: string | null;
+  end_date: string | null;
+  is_group_project: boolean;
+  user_id: string;
+}
 
 export default function ProfileContent() {
   const [profile, setProfile] = useState<{
@@ -27,6 +49,8 @@ export default function ProfileContent() {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [username, setUsername] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -44,6 +68,31 @@ export default function ProfileContent() {
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setIsLoadingProjects(true);
+        const projectsData = await getUserProjectsAction();
+        setProjects(projectsData || []);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        toast.error("Failed to load projects");
+      } finally {
+        setIsLoadingProjects(false);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  // Separate projects into owned and team projects
+  // Owned Projects: Projects where user is the owner AND is_group_project = false
+  // Team Projects: Projects where is_group_project = true (user owns it OR is a team member)
+  // Note: project.user_id is stored as OAuth ID, not database UUID
+  const ownedProjects = projects.filter((project) => !project.is_group_project);
+  const teamProjects = projects.filter(
+    (project) => project.is_group_project === true
+  );
 
   const handleSaveUsername = async () => {
     if (!profile) return;
@@ -214,8 +263,117 @@ export default function ProfileContent() {
           </Card>
         </motion.div>
 
-        {/* Profile Information Cards */}
+        {/* user projects details */}
         <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Projects</CardTitle>
+              <CardDescription>View and manage your projects</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+              {/* Owned Projects Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-md bg-primary/10 shrink-0">
+                      <FolderOpen className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Owned Projects</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Individual projects you own
+                      </p>
+                    </div>
+                  </div>
+                  {ownedProjects.length > 0 && (
+                    <Badge variant="secondary">{ownedProjects.length}</Badge>
+                  )}
+                </div>
+                {isLoadingProjects ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : ownedProjects.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {ownedProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        project_name={project.project_name}
+                        department={project.department}
+                        start_date={project.start_date}
+                        end_date={project.end_date}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                      <FolderOpen className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        No owned projects yet
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Team Projects Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-md bg-primary/10 shrink-0">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Team Projects</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Group projects you own or are part of
+                      </p>
+                    </div>
+                  </div>
+                  {teamProjects.length > 0 && (
+                    <Badge variant="secondary">{teamProjects.length}</Badge>
+                  )}
+                </div>
+                {isLoadingProjects ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : teamProjects.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {teamProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        project_name={project.project_name}
+                        department={project.department}
+                        start_date={project.start_date}
+                        end_date={project.end_date}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                      <Users className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        No team projects yet
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Profile Information Cards */}
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -266,7 +424,7 @@ export default function ProfileContent() {
               </CardContent>
             </Card>
           </motion.div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </div>
   );
