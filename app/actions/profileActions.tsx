@@ -26,3 +26,33 @@ export async function getProfileAction() {
   console.log(session.user.name);
   return user;
 }
+
+export async function updateUsernameAction(username: string) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    throw new Error("You must be logged in to update your username.");
+  }
+
+  if (!username || username.trim().length === 0) {
+    throw new Error("Username cannot be empty.");
+  }
+
+  // Normalize email to lowercase
+  const normalizedEmail = session.user.email.toLowerCase().trim();
+
+  const { data, error } = await supabase
+    .from("users")
+    .update({ username: username.trim() })
+    .eq("user_email", normalizedEmail)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating username:", error);
+    throw new Error(
+      `Failed to update username: ${error.message || "Unknown error"}`
+    );
+  }
+
+  return data;
+}

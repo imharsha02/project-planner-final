@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getProfileAction } from "../actions/profileActions";
+import {
+  getProfileAction,
+  updateUsernameAction,
+} from "../actions/profileActions";
 import { toast } from "sonner";
 import { User, Edit2, Save, X, Mail, Loader2 } from "lucide-react";
 
@@ -57,9 +60,9 @@ export default function ProfileContent() {
 
     setIsSaving(true);
     try {
-      // TODO: Implement updateUsernameAction
-      // await updateUsernameAction(username.trim());
-      setProfile({ ...profile, username: username.trim() });
+      await updateUsernameAction(username.trim());
+      const updatedProfile = await getProfileAction();
+      setProfile(updatedProfile);
       toast.success("Username updated successfully");
       setIsEditingUsername(false);
     } catch (error) {
