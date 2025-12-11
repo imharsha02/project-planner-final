@@ -24,7 +24,10 @@ export async function getProfileAction() {
   console.log(session.user.email);
   console.log(session.user.id);
   console.log(session.user.name);
-  return user;
+  return {
+    ...user,
+    image: session.user.image || null,
+  };
 }
 
 export async function updateUsernameAction(username: string) {

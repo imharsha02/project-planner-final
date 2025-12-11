@@ -26,6 +26,7 @@ import {
   FolderOpen,
   Users,
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ProjectCard } from "../components/ProjectCard";
 import { Badge } from "@/components/ui/badge";
 
@@ -44,6 +45,7 @@ export default function ProfileContent() {
     id: string;
     username: string;
     user_email: string;
+    image: string | null;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
@@ -188,9 +190,16 @@ export default function ProfileContent() {
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
                   >
-                    <User className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+                    <Avatar className="h-16 w-16 md:h-20 md:w-20 shrink-0">
+                      <AvatarImage
+                        src={profile.image || undefined}
+                        alt={profile.username}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        <User className="h-8 w-8 md:h-10 md:w-10" />
+                      </AvatarFallback>
+                    </Avatar>
                   </motion.div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">

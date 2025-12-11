@@ -26,6 +26,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (uniqueId) {
           token.userId = uniqueId;
         }
+        // Store profile image in token
+        if (profile.image) {
+          token.image = profile.image;
+        }
       }
       return token;
     },
@@ -33,6 +37,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log("Token in session creation: ", token);
       if (token.userId) {
         session.user.id = String(token.userId);
+      }
+      if (token.image) {
+        session.user.image = String(token.image);
       }
       return session;
     },
