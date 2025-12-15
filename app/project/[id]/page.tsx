@@ -22,15 +22,66 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     }
 
     const session = await auth();
-    const project = await getProjects().catch((error) => {
+    const projects = await getProjects().catch((error) => {
       console.error("Error fetching projects:", error);
       return null;
     });
 
-    const currentProject = project?.find((project) => project.id === id);
-    
+    const currentProject = projects?.find((project) => project.id === id);
+
+    // If project not found in user's projects, check if user is a team member
+    let projectData = currentProject;
+    if (!projectData) {
+      const supabase = createServerSupabaseServiceClient();
+      // Get user's database ID
+      const normalizedEmail = session?.user?.email?.toLowerCase().trim();
+      if (normalizedEmail) {
+        const { data: user } = await supabase
+          .from("users")
+          .select("id")
+          .eq("user_email", normalizedEmail)
+          .single();
+
+        if (user) {
+          // Check if user is a team member of this project
+          const { data: teamMember } = await supabase
+            .from("team_members")
+            .select("project_id")
+            .eq("project_id", id)
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+          if (teamMember) {
+            // Fetch the project data
+            const { data: project } = await supabase
+              .from("projects")
+              .select("*")
+              .eq("id", id)
+              .single();
+            projectData = project;
+          }
+        }
+      }
+    }
+
     // Check if user is the owner
-    const isOwner = currentProject?.user_id === session?.user?.id;
+    const isOwner = projectData?.user_id === session?.user?.id;
+
+    // If project not found and user is not a team member, show error
+    if (!projectData) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">
+              Project Not Found
+            </h1>
+            <p className="text-gray-600">
+              You don't have access to this project.
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     const supabase = createServerSupabaseServiceClient();
     const { data: teamMembersData, error: teamMembersError } = await supabase
@@ -52,12 +103,12 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     return (
       <ProjectDetailContent
         projectId={id}
-        projectName={currentProject?.project_name}
-        projectDescription={currentProject?.project_description}
-        department={currentProject?.department}
-        startDate={currentProject?.start_date || undefined}
-        endDate={currentProject?.end_date || undefined}
-        isGroupProject={currentProject?.is_group_project ?? null}
+        projectName={projectData?.project_name}
+        projectDescription={projectData?.project_description}
+        department={projectData?.department}
+        startDate={projectData?.start_date || undefined}
+        endDate={projectData?.end_date || undefined}
+        isGroupProject={projectData?.is_group_project ?? null}
         initialTeamMembers={initialTeamMembers}
         isOwner={isOwner}
       />
