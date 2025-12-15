@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trakr",
+  title: "Plan Desk",
   description:
     "The centrl hub for monitoring project status, managing team member access, and tracking progress towards deadlines",
 };

@@ -53,7 +53,7 @@ const Header = () => {
                   <Sparkles className="h-6 w-6 md:h-7 md:w-7 text-primary" />
                 </motion.div>
                 <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
-                  Trakr
+                  Plan Desk
                 </span>
               </Link>
             </motion.div>
