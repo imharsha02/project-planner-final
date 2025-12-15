@@ -1,6 +1,7 @@
 import React from "react";
 import { getProjects } from "@/app/lib/getProjects";
 import { createServerSupabaseServiceClient } from "@/lib/supabase/server";
+import { auth } from "@/app/auth";
 import ProjectDetailContent from "./ProjectDetailContent";
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
@@ -20,12 +21,16 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
       );
     }
 
+    const session = await auth();
     const project = await getProjects().catch((error) => {
       console.error("Error fetching projects:", error);
       return null;
     });
 
     const currentProject = project?.find((project) => project.id === id);
+    
+    // Check if user is the owner
+    const isOwner = currentProject?.user_id === session?.user?.id;
 
     const supabase = createServerSupabaseServiceClient();
     const { data: teamMembersData, error: teamMembersError } = await supabase
@@ -54,6 +59,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
         endDate={currentProject?.end_date || undefined}
         isGroupProject={currentProject?.is_group_project ?? null}
         initialTeamMembers={initialTeamMembers}
+        isOwner={isOwner}
       />
     );
   } catch (error) {

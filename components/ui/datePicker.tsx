@@ -121,7 +121,7 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
               captionLayout="dropdown"
               month={month}
               onMonthChange={setMonth}
-              disabled={disabled}
+              {...(disabled && { disabled })}
               onSelect={(date) => {
                 setDate(date);
                 setInputValue(formatDate(date));

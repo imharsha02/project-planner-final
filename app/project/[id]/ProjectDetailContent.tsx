@@ -36,8 +36,22 @@ import {
   Mail,
   Plus,
   ArrowLeft,
+  Edit2,
+  Save,
+  X,
 } from "lucide-react";
 import Link from "next/link";
+import { DatePicker } from "@/components/ui/datePicker";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { departments } from "@/lib/utils";
+import { updateProjectAction } from "@/app/actions/projectaActions";
 
 type TeamMember = { id: string; member_email: string; user_id?: string | null };
 
@@ -50,6 +64,7 @@ interface ProjectDetailContentProps {
   endDate?: string;
   isGroupProject?: boolean | null;
   initialTeamMembers?: TeamMember[];
+  isOwner?: boolean;
 }
 
 const ProjectDetailContent = ({
@@ -61,6 +76,7 @@ const ProjectDetailContent = ({
   endDate,
   isGroupProject: initialIsGroupProject,
   initialTeamMembers = [],
+  isOwner = false,
 }: ProjectDetailContentProps) => {
   const router = useRouter();
   const [isGroupProject, setIsGroupProject] = useState<boolean | null>(
@@ -75,6 +91,17 @@ const ProjectDetailContent = ({
     useState<TeamMember[]>(initialTeamMembers);
   const [isAddingTeamMembers, setIsAddingTeamMembers] = useState(false);
   const [teamMembersError, setTeamMembersError] = useState<string | null>(null);
+
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProjectName, setEditedProjectName] = useState(projectName || "");
+  const [editedProjectDescription, setEditedProjectDescription] = useState(
+    projectDescription || ""
+  );
+  const [editedDepartment, setEditedDepartment] = useState(department || "");
+  const [editedStartDate, setEditedStartDate] = useState(startDate || "");
+  const [editedEndDate, setEditedEndDate] = useState(endDate || "");
+  const [isSavingProject, setIsSavingProject] = useState(false);
   const handleTeamMemberCountChange = (value: string) => {
     const parsedValue = Number(value);
     const sanitizedCount = Number.isNaN(parsedValue)
@@ -255,6 +282,84 @@ const ProjectDetailContent = ({
     setExistingTeamMembers([...initialTeamMembers]);
   }, [initialTeamMembers]);
 
+  // Reset edit fields when props change
+  useEffect(() => {
+    if (!isEditing) {
+      setEditedProjectName(projectName || "");
+      setEditedProjectDescription(projectDescription || "");
+      setEditedDepartment(department || "");
+      setEditedStartDate(startDate || "");
+      setEditedEndDate(endDate || "");
+    }
+  }, [
+    projectName,
+    projectDescription,
+    department,
+    startDate,
+    endDate,
+    isEditing,
+  ]);
+
+  // Get current date for disabling past dates
+  const today = React.useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  }, []);
+
+  const disablePastDates = React.useCallback(
+    (date: Date) => {
+      if (!date) return false;
+      const dateToCheck = new Date(date);
+      dateToCheck.setHours(0, 0, 0, 0);
+      return dateToCheck < today;
+    },
+    [today]
+  );
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedProjectName(projectName || "");
+    setEditedProjectDescription(projectDescription || "");
+    setEditedDepartment(department || "");
+    setEditedStartDate(startDate || "");
+    setEditedEndDate(endDate || "");
+  };
+
+  const handleSaveProject = async () => {
+    if (!editedProjectName.trim() || !editedDepartment.trim()) {
+      toast.error("Project name and department are required");
+      return;
+    }
+
+    setIsSavingProject(true);
+    try {
+      const formData = new FormData();
+      formData.append("projectId", projectId);
+      formData.append("projectName", editedProjectName.trim());
+      formData.append("projectDescription", editedProjectDescription.trim());
+      formData.append("department", editedDepartment.trim());
+      formData.append("startDate", editedStartDate || "");
+      formData.append("endDate", editedEndDate || "");
+
+      await updateProjectAction(formData);
+      toast.success("Project updated successfully");
+      setIsEditing(false);
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating project:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update project"
+      );
+    } finally {
+      setIsSavingProject(false);
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;
     try {
@@ -341,13 +446,33 @@ const ProjectDetailContent = ({
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 space-y-3">
-                  <CardTitle className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-                    {projectName || "Project"}
-                  </CardTitle>
-                  {projectDescription && (
-                    <CardDescription className="text-base leading-relaxed max-w-3xl">
-                      {projectDescription}
-                    </CardDescription>
+                  {isEditing ? (
+                    <Input
+                      value={editedProjectName}
+                      onChange={(e) => setEditedProjectName(e.target.value)}
+                      className="text-3xl sm:text-4xl md:text-5xl font-bold h-auto py-2"
+                      placeholder="Project Name"
+                    />
+                  ) : (
+                    <CardTitle className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+                      {projectName || "Project"}
+                    </CardTitle>
+                  )}
+                  {isEditing ? (
+                    <Textarea
+                      value={editedProjectDescription}
+                      onChange={(e) =>
+                        setEditedProjectDescription(e.target.value)
+                      }
+                      className="text-base leading-relaxed max-w-3xl min-h-[100px]"
+                      placeholder="Project Description"
+                    />
+                  ) : (
+                    projectDescription && (
+                      <CardDescription className="text-base leading-relaxed max-w-3xl">
+                        {projectDescription}
+                      </CardDescription>
+                    )
                   )}
                 </div>
                 <CardAction className="flex flex-col items-start sm:items-end gap-3">
@@ -357,27 +482,84 @@ const ProjectDetailContent = ({
                   >
                     {projectStatusLabel}
                   </Badge>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setDialogOpen(true)}
-                      className="w-full sm:w-auto"
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      Update Status
-                    </Button>
-                  </motion.div>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    {isOwner && (
+                      <>
+                        {isEditing ? (
+                          <>
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleSaveProject}
+                                disabled={isSavingProject}
+                                className="w-full sm:w-auto"
+                              >
+                                <Save className="mr-2 h-4 w-4" />
+                                {isSavingProject ? "Saving..." : "Save"}
+                              </Button>
+                            </motion.div>
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                                disabled={isSavingProject}
+                                className="w-full sm:w-auto"
+                              >
+                                <X className="mr-2 h-4 w-4" />
+                                Cancel
+                              </Button>
+                            </motion.div>
+                          </>
+                        ) : (
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleEdit}
+                              className="w-full sm:w-auto"
+                            >
+                              <Edit2 className="mr-2 h-4 w-4" />
+                              Edit Project
+                            </Button>
+                          </motion.div>
+                        )}
+                      </>
+                    )}
+                    {!isEditing && isOwner && (
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDialogOpen(true)}
+                          className="w-full sm:w-auto"
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Update Status
+                        </Button>
+                      </motion.div>
+                    )}
+                  </div>
                 </CardAction>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={!isEditing ? { scale: 1.02 } : undefined}
                   transition={{ duration: 0.2 }}
                   className="flex items-start gap-3 p-4 rounded-lg border bg-muted/50"
                 >
@@ -388,13 +570,31 @@ const ProjectDetailContent = ({
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
                       Department
                     </p>
-                    <p className="text-base font-semibold truncate">
-                      {department || "Not specified"}
-                    </p>
+                    {isEditing ? (
+                      <Select
+                        value={editedDepartment}
+                        onValueChange={setEditedDepartment}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departments.map((dept) => (
+                            <SelectItem key={dept} value={dept}>
+                              {dept}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-base font-semibold truncate">
+                        {department || "Not specified"}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={!isEditing ? { scale: 1.02 } : undefined}
                   transition={{ duration: 0.2 }}
                   className="flex items-start gap-3 p-4 rounded-lg border bg-muted/50"
                 >
@@ -405,13 +605,21 @@ const ProjectDetailContent = ({
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
                       Start Date
                     </p>
-                    <p className="text-base font-semibold">
-                      {formatDate(startDate) || "Not set"}
-                    </p>
+                    {isEditing ? (
+                      <DatePicker
+                        value={editedStartDate}
+                        onChange={setEditedStartDate}
+                        disabled={disablePastDates}
+                      />
+                    ) : (
+                      <p className="text-base font-semibold">
+                        {formatDate(startDate) || "Not set"}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={!isEditing ? { scale: 1.02 } : undefined}
                   transition={{ duration: 0.2 }}
                   className="flex items-start gap-3 p-4 rounded-lg border bg-muted/50"
                 >
@@ -422,9 +630,17 @@ const ProjectDetailContent = ({
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
                       End Date
                     </p>
-                    <p className="text-base font-semibold">
-                      {formatDate(endDate) || "Not set"}
-                    </p>
+                    {isEditing ? (
+                      <DatePicker
+                        value={editedEndDate}
+                        onChange={setEditedEndDate}
+                        disabled={disablePastDates}
+                      />
+                    ) : (
+                      <p className="text-base font-semibold">
+                        {formatDate(endDate) || "Not set"}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               </div>
@@ -449,105 +665,109 @@ const ProjectDetailContent = ({
                       <CardTitle>Team Members</CardTitle>
                     </div>
                     <CardDescription>
-                      Invite team members to collaborate on this project.
+                      {isOwner
+                        ? "Invite team members to collaborate on this project."
+                        : "Team members working on this project."}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Add Team Members Form */}
-                    <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                        <Label
-                          htmlFor="team-member-count"
-                          className="text-sm font-medium"
-                        >
-                          Number of Team Members
-                        </Label>
-                        <Input
-                          id="team-member-count"
-                          type="number"
-                          min={0}
-                          max={10}
-                          className="w-full sm:w-32"
-                          value={noOfTeamMembers}
-                          onChange={(e) =>
-                            handleTeamMemberCountChange(e.target.value)
-                          }
-                        />
-                      </div>
-                      <AnimatePresence>
-                        {teamMemberEmails.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="space-y-3"
+                    {/* Add Team Members Form - Only for owners */}
+                    {isOwner && (
+                      <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                          <Label
+                            htmlFor="team-member-count"
+                            className="text-sm font-medium"
                           >
-                            {teamMemberEmails.map((member, index) => (
-                              <motion.div
-                                key={`team-member-${index}`}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
-                              >
-                                <Label
-                                  htmlFor={`team-member-${index}`}
-                                  className="text-sm font-medium sm:w-40"
+                            Number of Team Members
+                          </Label>
+                          <Input
+                            id="team-member-count"
+                            type="number"
+                            min={0}
+                            max={10}
+                            className="w-full sm:w-32"
+                            value={noOfTeamMembers}
+                            onChange={(e) =>
+                              handleTeamMemberCountChange(e.target.value)
+                            }
+                          />
+                        </div>
+                        <AnimatePresence>
+                          {teamMemberEmails.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="space-y-3"
+                            >
+                              {teamMemberEmails.map((member, index) => (
+                                <motion.div
+                                  key={`team-member-${index}`}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: index * 0.1 }}
+                                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
                                 >
-                                  Email {index + 1}
-                                </Label>
-                                <Input
-                                  id={`team-member-${index}`}
-                                  type="email"
-                                  value={member}
-                                  placeholder="team.member@example.com"
-                                  onChange={(e) =>
-                                    handleTeamMemberEmailChange(
-                                      index,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="sm:flex-1"
-                                />
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {teamMembersError && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-sm font-medium text-destructive p-3 rounded-md bg-destructive/10 border border-destructive/20"
-                        >
-                          {teamMembersError}
-                        </motion.p>
-                      )}
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Button
-                          disabled={
-                            noOfTeamMembers === 0 || isAddingTeamMembers
-                          }
-                          variant="default"
-                          size="sm"
-                          className="w-full sm:w-auto"
-                          onClick={handleAddTeamMembers}
-                        >
-                          {isAddingTeamMembers ? (
-                            "Adding..."
-                          ) : (
-                            <>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Add Team Members
-                            </>
+                                  <Label
+                                    htmlFor={`team-member-${index}`}
+                                    className="text-sm font-medium sm:w-40"
+                                  >
+                                    Email {index + 1}
+                                  </Label>
+                                  <Input
+                                    id={`team-member-${index}`}
+                                    type="email"
+                                    value={member}
+                                    placeholder="team.member@example.com"
+                                    onChange={(e) =>
+                                      handleTeamMemberEmailChange(
+                                        index,
+                                        e.target.value
+                                      )
+                                    }
+                                    className="sm:flex-1"
+                                  />
+                                </motion.div>
+                              ))}
+                            </motion.div>
                           )}
-                        </Button>
-                      </motion.div>
-                    </div>
+                        </AnimatePresence>
+                        {teamMembersError && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-sm font-medium text-destructive p-3 rounded-md bg-destructive/10 border border-destructive/20"
+                          >
+                            {teamMembersError}
+                          </motion.p>
+                        )}
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Button
+                            disabled={
+                              noOfTeamMembers === 0 || isAddingTeamMembers
+                            }
+                            variant="default"
+                            size="sm"
+                            className="w-full sm:w-auto"
+                            onClick={handleAddTeamMembers}
+                          >
+                            {isAddingTeamMembers ? (
+                              "Adding..."
+                            ) : (
+                              <>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Team Members
+                              </>
+                            )}
+                          </Button>
+                        </motion.div>
+                      </div>
+                    )}
 
                     {/* Existing Team Members List */}
                     {existingTeamMembers.length > 0 && (

@@ -170,6 +170,22 @@ export async function deleteProjectAction(projectId: string) {
   if (!projectId) {
     throw new Error("Project ID is required.");
   }
+
+  // Check if user is the owner of the project
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("user_id")
+    .eq("id", projectId)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error("Project not found.");
+  }
+
+  if (project.user_id !== session.user.id) {
+    throw new Error("You do not have permission to delete this project.");
+  }
+
   const { data, error } = await supabase
     .from("projects")
     .delete()
@@ -186,6 +202,80 @@ export async function deleteProjectAction(projectId: string) {
   return data;
 }
 
+export async function updateProjectAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to update a project.");
+  }
+
+  const projectId = formData.get("projectId") as string | null;
+  const projectName = formData.get("projectName") as string | null;
+  const projectDescription = formData.get("projectDescription") as
+    | string
+    | null;
+  const department = formData.get("department") as string | null;
+  const startDate = formData.get("startDate") as string | null;
+  const endDate = formData.get("endDate") as string | null;
+
+  if (!projectId) {
+    throw new Error("Project ID is required.");
+  }
+
+  // Check if user is the owner of the project
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("user_id")
+    .eq("id", projectId)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error("Project not found.");
+  }
+
+  if (project.user_id !== session.user.id) {
+    throw new Error("You do not have permission to edit this project.");
+  }
+
+  // Validate required fields
+  if (!projectName || !department) {
+    throw new Error("Project name and department are required.");
+  }
+
+  // Build update object with only provided fields
+  const updateData: any = {
+    project_name: projectName,
+    department: department,
+  };
+
+  if (projectDescription !== null) {
+    updateData.project_description = projectDescription;
+  }
+  if (startDate !== null) {
+    updateData.start_date = startDate || null;
+  }
+  if (endDate !== null) {
+    updateData.end_date = endDate || null;
+  }
+
+  const { data, error } = await supabase
+    .from("projects")
+    .update(updateData)
+    .eq("id", projectId)
+    .select();
+
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(
+      `Failed to update project: ${
+        error.message ||
+        "Unknown error. Check if you are logged in and registered."
+      }`
+    );
+  }
+
+  return data;
+}
+
 export async function updateProjectTeamStatusAction(
   projectId: string,
   isGroupProject: boolean
@@ -196,6 +286,21 @@ export async function updateProjectTeamStatusAction(
   }
   if (!projectId) {
     throw new Error("Project ID is required.");
+  }
+
+  // Check if user is the owner of the project
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("user_id")
+    .eq("id", projectId)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error("Project not found.");
+  }
+
+  if (project.user_id !== session.user.id) {
+    throw new Error("You do not have permission to edit this project.");
   }
 
   const { data, error } = await supabase
