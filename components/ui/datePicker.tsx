@@ -35,9 +35,10 @@ function isValidDate(date: Date | undefined) {
 interface DatePickerProps {
   value?: string;
   onChange?: (value: string) => void;
+  disabled?: (date: Date) => boolean;
 }
 
-export function DatePicker({ value, onChange }: DatePickerProps) {
+export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(
     value ? new Date(value) : undefined
@@ -50,15 +51,22 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
     if (value) {
       const newDate = new Date(value);
       if (isValidDate(newDate)) {
-        setDate(newDate);
-        setMonth(newDate);
-        setInputValue(formatDate(newDate));
+        // Check if the date is disabled
+        if (!disabled || !disabled(newDate)) {
+          setDate(newDate);
+          setMonth(newDate);
+          setInputValue(formatDate(newDate));
+        } else {
+          // If date is disabled, clear it
+          setDate(undefined);
+          setInputValue("");
+        }
       }
     } else {
       setDate(undefined);
       setInputValue("");
     }
-  }, [value]);
+  }, [value, disabled]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -69,12 +77,18 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
           placeholder="June 01, 2025"
           className="bg-background pr-10"
           onChange={(e) => {
-            const date = new Date(e.target.value);
+            const inputDate = new Date(e.target.value);
             setInputValue(e.target.value);
-            if (isValidDate(date)) {
-              setDate(date);
-              setMonth(date);
-              onChange?.(date.toISOString());
+            if (isValidDate(inputDate)) {
+              // Check if the date is disabled
+              if (!disabled || !disabled(inputDate)) {
+                setDate(inputDate);
+                setMonth(inputDate);
+                onChange?.(inputDate.toISOString());
+              } else {
+                // If date is disabled, reset to current value
+                setInputValue(formatDate(date));
+              }
             }
           }}
           onKeyDown={(e) => {
@@ -107,6 +121,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
               captionLayout="dropdown"
               month={month}
               onMonthChange={setMonth}
+              disabled={disabled}
               onSelect={(date) => {
                 setDate(date);
                 setInputValue(formatDate(date));

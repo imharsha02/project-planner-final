@@ -2,6 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import React from "react";
 
 import {
   Select,
@@ -54,6 +55,21 @@ const ProjectDetailsForm = ({
   buttonText,
 }: ProjectDetailsFormProps) => {
   const router = useRouter();
+  
+  // Get current date for disabling past dates
+  const today = React.useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  }, []);
+
+  // Function to disable past dates
+  const disablePastDates = React.useCallback((date: Date) => {
+    const dateToCheck = new Date(date);
+    dateToCheck.setHours(0, 0, 0, 0);
+    return dateToCheck < today;
+  }, [today]);
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -183,6 +199,7 @@ const ProjectDetailsForm = ({
                         <DatePicker
                           value={field.value}
                           onChange={field.onChange}
+                          disabled={disablePastDates}
                         />
                       </FormControl>
                     </FormItem>
@@ -207,6 +224,7 @@ const ProjectDetailsForm = ({
                         <DatePicker
                           value={field.value}
                           onChange={field.onChange}
+                          disabled={disablePastDates}
                         />
                       </FormControl>
                     </FormItem>

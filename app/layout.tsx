@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project Planner",
-  description: "An app that makes planning projects easy",
+  title: "Trakr",
+  description:
+    "The centrl hub for monitoring project status, managing team member access, and tracking progress towards deadlines",
 };
 
 export default function RootLayout({
