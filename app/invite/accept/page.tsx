@@ -50,7 +50,6 @@ export default async function InviteAcceptPage({
         projectId={projectId || invitationResult.invitation.projectId}
         invitation={invitationResult.invitation}
         isAuthenticated={!!session?.user?.id}
-        userId={session?.user?.id}
       />
     </Suspense>
   );

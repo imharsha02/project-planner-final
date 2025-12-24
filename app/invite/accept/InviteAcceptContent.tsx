@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { acceptInvitationAction } from "@/app/actions/invitationActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,6 @@ interface InviteAcceptContentProps {
     expiresAt: string;
   };
   isAuthenticated: boolean;
-  userId?: string;
 }
 
 export default function InviteAcceptContent({
@@ -25,7 +24,6 @@ export default function InviteAcceptContent({
   projectId,
   invitation,
   isAuthenticated,
-  userId,
 }: InviteAcceptContentProps) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -34,23 +32,19 @@ export default function InviteAcceptContent({
 
   useEffect(() => {
     // If user is authenticated, automatically accept the invitation
-    if (isAuthenticated && userId && status === "pending") {
+    // User is automatically registered during OAuth sign-in
+    if (isAuthenticated && status === "pending") {
       handleAcceptInvitation();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated]);
 
   const handleAcceptInvitation = async () => {
-    if (!userId) {
-      setError("User ID is required");
-      return;
-    }
-
     setIsProcessing(true);
     setError(null);
 
     try {
-      const result = await acceptInvitationAction(token, userId);
+      const result = await acceptInvitationAction(token);
 
       if (result.success) {
         setStatus("success");
@@ -116,6 +110,8 @@ export default function InviteAcceptContent({
   }
 
   if (status === "error") {
+    const isEmailMismatch = error?.includes("invitation was sent to");
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/20">
         <motion.div
@@ -128,16 +124,36 @@ export default function InviteAcceptContent({
               <CardTitle className="text-2xl font-bold text-red-600">
                 Error
               </CardTitle>
-              <CardDescription>{error || "Failed to accept invitation"}</CardDescription>
+              <CardDescription className="whitespace-pre-line">
+                {error || "Failed to accept invitation"}
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => router.push("/")}
-                variant="outline"
-                className="w-full"
-              >
-                Go to Home
-              </Button>
+            <CardContent className="space-y-3">
+              {isEmailMismatch && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Tip:</strong> Make sure you sign in with the email address shown in the invitation ({invitation.email}).
+                  </p>
+                </div>
+              )}
+              <div className="space-y-2">
+                {isEmailMismatch && isAuthenticated && (
+                  <Button
+                    onClick={() => signOut({ callbackUrl: `/invite/accept?token=${token}&project=${projectId}` })}
+                    variant="default"
+                    className="w-full"
+                  >
+                    Sign Out & Try Again
+                  </Button>
+                )}
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Go to Home
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -184,7 +200,7 @@ export default function InviteAcceptContent({
               You&apos;ve been invited!
             </CardTitle>
             <CardDescription>
-              Sign in to accept the invitation to join{" "}
+              Sign in to automatically register and accept the invitation to join{" "}
               <strong>{invitation.projectName}</strong>
             </CardDescription>
           </CardHeader>
@@ -220,8 +236,14 @@ export default function InviteAcceptContent({
               <p className="text-sm text-red-600 mt-4">{error}</p>
             )}
 
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
+              <p className="text-xs text-blue-800">
+                <strong>Important:</strong> Please sign in with the email address <strong>{invitation.email}</strong> to accept this invitation.
+              </p>
+            </div>
+
             <p className="text-xs text-gray-500 mt-4 text-center">
-              By signing in, you agree to be added to this project.
+              By signing in, your account will be automatically created (if new) and you&apos;ll be added to this project.
             </p>
           </CardContent>
         </Card>

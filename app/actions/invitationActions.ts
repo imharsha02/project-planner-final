@@ -6,11 +6,11 @@ import { auth } from "@/app/auth";
 const supabase = createServerSupabaseServiceClient();
 /**
  * Accept an invitation by token
- * This should be called after the user has authenticated
+ * This automatically accepts the invitation after OAuth sign-in
+ * The user is automatically registered during OAuth sign-in
  */
 export async function acceptInvitationAction(
-  token: string,
-  userId: string
+  token: string
 ): Promise<{ success: boolean; projectId?: string; error?: string }> {
   try {
     // Find the invitation
@@ -42,30 +42,32 @@ export async function acceptInvitationAction(
     if (!session?.user?.email) {
       return {
         success: false,
-        error: "Not authenticated. Please sign in again.",
+        error: "Not authenticated. Please sign in to accept this invitation.",
       };
     }
 
-    // Get user from users table by email (not by OAuth provider ID)
+    const sessionEmail = session.user.email.toLowerCase();
+    const invitationEmail = invitation.email.toLowerCase();
+
+    // Verify the email matches the invitation
+    if (sessionEmail !== invitationEmail) {
+      return {
+        success: false,
+        error: `This invitation was sent to ${invitation.email}, but you are signed in as ${session.user.email}. Please sign out and sign in with the email address the invitation was sent to.`,
+      };
+    }
+
+    // Get user from users table by email (user should exist after OAuth sign-in)
     const { data: user, error: userError } = await supabase
       .from("users")
       .select("id, user_email, username")
-      .eq("user_email", session.user.email)
+      .eq("user_email", sessionEmail)
       .single();
 
     if (userError || !user) {
       return {
         success: false,
-        error:
-          "User not found. Please ensure you are logged in with the correct email.",
-      };
-    }
-
-    // Verify the email matches the invitation
-    if (user.user_email.toLowerCase() !== invitation.email.toLowerCase()) {
-      return {
-        success: false,
-        error: "This invitation was sent to a different email address.",
+        error: "User account not found. Please try signing in again.",
       };
     }
 
