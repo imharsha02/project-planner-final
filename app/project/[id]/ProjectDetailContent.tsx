@@ -170,20 +170,25 @@ const ProjectDetailContent = ({
       // 2. Aggregate Results
       let invitationsSent = 0;
       let membersAddedCount = 0;
+      const invitedEmails: string[] = [];
+      const addedMemberEmails: string[] = [];
 
       // Process the results from the server action
       const errors: string[] = [];
       const warnings: string[] = [];
-      result.results.forEach((item) => {
+      result.results.forEach((item, index) => {
+        const email = normalizedEmails[index];
         if (item.success) {
           if (item.isInvitation) {
             invitationsSent++;
+            invitedEmails.push(email);
             // Check if there's an error message indicating email failure
             if (item.error && item.error.includes("Email sending failed")) {
               warnings.push(item.error);
             }
           } else {
             membersAddedCount++;
+            addedMemberEmails.push(email);
           }
         } else if (item.error) {
           errors.push(item.error);
@@ -204,18 +209,39 @@ const ProjectDetailContent = ({
           description: warnings.join(". "),
         });
       } else {
-        // Show success toast notifications
+        // Show success toast notifications with highlighted emails
         if (invitationsSent > 0 && membersAddedCount > 0) {
           toast.success("Team members added successfully!", {
-            description: `${membersAddedCount} member(s) added and ${invitationsSent} invitation(s) sent.`,
+            description: (
+              <div className="space-y-1">
+                <p>{membersAddedCount} member(s) added and {invitationsSent} invitation(s) sent to:</p>
+                <p className="!text-primary !font-semibold !mt-1">
+                  {invitedEmails.join(", ")}
+                </p>
+              </div>
+            ),
           });
         } else if (invitationsSent > 0) {
           toast.success("Invitation(s) sent successfully!", {
-            description: `${invitationsSent} invitation email(s) sent. Users will receive an email to join the project.`,
+            description: (
+              <div className="space-y-1">
+                <p>Invitation email(s) sent to:</p>
+                <p className="!text-primary !font-semibold !mt-1">
+                  {invitedEmails.join(", ")}
+                </p>
+              </div>
+            ),
           });
         } else if (membersAddedCount > 0) {
           toast.success("Team member(s) added successfully!", {
-            description: `${membersAddedCount} member(s) added to the project.`,
+            description: (
+              <div className="space-y-1">
+                <p>{membersAddedCount} member(s) added:</p>
+                <p className="!text-primary !font-semibold !mt-1">
+                  {addedMemberEmails.join(", ")}
+                </p>
+              </div>
+            ),
           });
         }
       }
