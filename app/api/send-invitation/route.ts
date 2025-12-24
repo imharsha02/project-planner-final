@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Send email
     const resend = getResendClient();
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+      from: process.env.EMAIL_FROM || "onboarding@resend.dev",
       to: [to],
       subject: `Invitation to join ${projectName}`,
       html: emailHtml,
