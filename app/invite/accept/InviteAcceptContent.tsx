@@ -81,6 +81,23 @@ export default function InviteAcceptContent({
     });
   };
 
+  // Helper function to highlight email addresses in error messages
+  const highlightEmails = (text: string) => {
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g;
+    const parts = text.split(emailRegex);
+    
+    return parts.map((part, index) => {
+      if (emailRegex.test(part)) {
+        return (
+          <span key={index} className="font-semibold text-primary">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   if (status === "success") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/20">
@@ -119,20 +136,22 @@ export default function InviteAcceptContent({
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-md w-full mx-4"
         >
-          <Card className="shadow-lg border-red-200">
+          <Card className={`shadow-lg ${isEmailMismatch ? "border-yellow-200" : "border-red-200"}`}>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-red-600">
-                Error
+              <CardTitle className={`text-2xl font-bold ${isEmailMismatch ? "text-yellow-600" : "text-red-600"}`}>
+                {isEmailMismatch ? "Email Mismatch" : "Error"}
               </CardTitle>
               <CardDescription className="whitespace-pre-line">
-                {error || "Failed to accept invitation"}
+                {error ? highlightEmails(error) : "Failed to accept invitation"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {isEmailMismatch && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2">
                   <p className="text-sm text-yellow-800">
-                    <strong>Tip:</strong> Make sure you sign in with the email address shown in the invitation ({invitation.email}).
+                    <strong>Tip:</strong> Make sure you sign in with the email address shown in the invitation (
+                    <span className="font-semibold text-primary">{invitation.email}</span>
+                    ).
                   </p>
                 </div>
               )}

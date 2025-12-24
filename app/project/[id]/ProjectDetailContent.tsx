@@ -222,7 +222,7 @@ const ProjectDetailContent = ({
             ),
           });
         } else if (invitationsSent > 0) {
-          toast.success("Invitation(s) sent successfully!", {
+          toast.success("Mail has been sent", {
             description: (
               <div className="space-y-1">
                 <p>Invitation email(s) sent to:</p>
