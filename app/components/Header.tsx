@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, LayoutDashboard, Menu, X, Sparkles } from "lucide-react";
+import { Plus, LayoutDashboard, Menu, X } from "lucide-react";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -46,11 +46,17 @@ const Header = () => {
             >
               <Link href="/" className="flex items-center gap-2 group">
                 <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-                  className="relative"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative cursor-pointer"
                 >
-                  <Sparkles className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+                  <Image
+                    src="/images/logo.png"
+                    alt="Plan Desk Logo"
+                    width={28}
+                    height={28}
+                    className="h-6 w-6 md:h-7 md:w-7"
+                  />
                 </motion.div>
                 <span className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
                   Plan Desk

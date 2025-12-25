@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: "Plan Desk",
   description:
     "The centrl hub for monitoring project status, managing team member access, and tracking progress towards deadlines",
+  icons: {
+    icon: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
